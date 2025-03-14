@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('username')->unique();
             $table->string('email')->unique();
             $table->string('password');
+            $table->string('avatar')->nullable();
             $table->boolean('is_admin')->default(false);
             $table->timestamps();
         });
