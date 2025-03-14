@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use Auth;
 use Hash;
 use Illuminate\Http\Request;
 use App\Models\User;
+use Laravel\Socialite\Facades\Socialite;
+use Str;
+
 
 
 /**
@@ -51,7 +55,7 @@ class AuthController extends Controller
     {
         // Validate the incoming request
         $request->validate([
-            'email' => 'required|email|exists:users',
+            'email' => 'required|email',
             'password' => 'required|string',
         ]);
 
@@ -60,7 +64,7 @@ class AuthController extends Controller
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['error' => 'Invalid credentials'], 401);
         }
-        $token = $user->createToken('carrental')->plainTextToken;
+        $token = $user->createToken('filerouge')->plainTextToken;
         return response()->json(['token' => $token, "user" => $user]);
     }
     /**
@@ -97,18 +101,20 @@ class AuthController extends Controller
     {
         // Validate the incoming request
         $request->validate([
-            'name' => 'required|string|max:255',
+            'username' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|confirmed|min:6',
         ]);
 
+        $encodedName = urlencode($request->username);
         // Create the new user
         $user = User::create([
-            'name' => $request->name,
+            'username' => $request->username,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'avatar' => "https://ui-avatars.com/api/?name={$encodedName}&size=128&background=random&color=fff",
         ]);
-        return response()->json(['message', 'user was registered successfully'], 201);
+        return response()->json(['message' => 'user was registered successfully', 'user' => $user], 201);
     }
 
     /**
@@ -140,4 +146,39 @@ class AuthController extends Controller
         $request->user()->tokens()->delete();
         return response()->json(['message' => 'Logged out successfully'], 200);
     }
+    public function redirectToGoogle()
+    {
+        return Socialite::driver('google')->redirect();
+    }
+    public function handleGoogleCallback()
+    {
+        try {
+            $googleUser = Socialite::driver('google')->user();
+
+            $user = User::updateOrCreate(
+                ['google_id' => $googleUser->id],
+                [
+                    'username' => $googleUser->name,
+                    'email' => $googleUser->email,
+                    'avatar' => $googleUser->avatar,
+                    'password' => Str::random(12) // Str::password(12) is incorrect
+                ]
+            );
+
+            // Delete existing tokens before creating a new one
+            $user->tokens()->delete();
+            $token = $user->createToken('filerouge')->plainTextToken;
+
+            return response()->json(['token' => $token, 'user' => $user]);
+
+        } catch (\Laravel\Socialite\Two\InvalidStateException $e) {
+            return response()->json(['error' => 'Invalid Google authentication state.'], 401);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json(['error' => 'Database error occurred.'], 500);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'An unexpected error occurred.'], 500);
+        }
+    }
+
+
 }
