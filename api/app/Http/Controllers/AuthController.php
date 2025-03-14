@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Auth;
 use Hash;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -55,7 +54,7 @@ class AuthController extends Controller
     {
         // Validate the incoming request
         $request->validate([
-            'email' => 'required|email',
+            'email' => 'required|email|exists:users,email',
             'password' => 'required|string',
         ]);
 
@@ -64,6 +63,7 @@ class AuthController extends Controller
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['error' => 'Invalid credentials'], 401);
         }
+        $user->tokens()->delete();
         $token = $user->createToken('filerouge')->plainTextToken;
         return response()->json(['token' => $token, "user" => $user]);
     }
@@ -101,9 +101,9 @@ class AuthController extends Controller
     {
         // Validate the incoming request
         $request->validate([
-            'username' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users,username',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|confirmed|min:6',
+            'password' => 'required|string|confirmed|min:8',
         ]);
 
         $encodedName = urlencode($request->username);
