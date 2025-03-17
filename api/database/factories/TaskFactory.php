@@ -20,7 +20,6 @@ class TaskFactory extends Factory
     public function definition(): array
     {
         return [
-            'id' => Str::uuid(), // Generate a random UUID
             'title' => $this->faker->sentence, // Random title
             'description' => $this->faker->paragraph, // Random description
             'project_id' => Project::factory(), // Assuming you have a Project model factory
