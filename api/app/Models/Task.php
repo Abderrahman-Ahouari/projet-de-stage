@@ -14,7 +14,9 @@ class Task extends Model
 
     protected $fillable = [
         'title',
-        'description'
+        'description',
+        'category_id',
+        'status'
     ];
     protected function casts(): array
     {
@@ -22,6 +24,9 @@ class Task extends Model
             'id' => 'string',
             'password' => 'hashed',
         ];
+    }
+    public function project(){
+        return $this->belongsTo(Project::class);
     }
 
 }
