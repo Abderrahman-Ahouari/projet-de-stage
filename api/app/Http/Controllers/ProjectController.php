@@ -37,21 +37,8 @@ class ProjectController extends Controller
     public function update(Request $request, Project $project)
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
+            'title' => 'string|max:255',
             'description' => 'nullable|string',
-        ]);
-
-        $project->update($validated);
-
-        return response()->json(['message' => 'Project updated successfully', 'project' => $project], 200);
-    }
-
-
-    public function patch(Request $request, Project $project)
-    {
-        $validated = $request->validate([
-            'title' => 'sometimes|string|max:255',
-            'description' => 'sometimes|nullable|string',
         ]);
 
         $project->update($validated);
