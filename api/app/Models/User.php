@@ -12,7 +12,7 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasUuids,HasApiTokens;
+    use HasFactory, Notifiable, HasUuids, HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -48,6 +48,17 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    public function projects()
+    {
+        return $this->belongsToMany(Project::class, 'contributions');
+    }
+    public function ownProjects()
+    {
+        return $this->belongsToMany(Project::class, 'contributions')
+            ->wherePivot('role_id', 1); // assuming 'role' is the column name
+    }
+
+
     protected static function boot()
     {
         parent::boot();
