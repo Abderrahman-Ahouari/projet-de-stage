@@ -10,17 +10,13 @@ use Illuminate\Support\Str;
 
 class TaskController extends Controller
 {
-
     public function index(Project $project)
     {
-        $tasks = $project->tasks; 
-
+        $tasks = $project->tasks;
         return response()->json($tasks);
     }
 
-    /**
-     * Store a newly created resource in storage for a specific project.
-     */
+    
     public function store(Request $request, Project $project)
     {
         // Validate the incoming request data
@@ -74,15 +70,12 @@ class TaskController extends Controller
 
     public function destroy(Project $project, Task $task)
     {
-        // Check if the task belongs to the specified project
         if ($task->project_id !== $project->id) {
             return response()->json(['message' => 'Task not found in this project.'], 404);
         }
 
-        // Delete the task
         $task->delete();
 
-        // Return a success message
         return response()->json(['message' => 'Task deleted successfully.'], 200);
     }
 }
