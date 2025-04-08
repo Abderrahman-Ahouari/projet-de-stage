@@ -28,5 +28,9 @@ class Task extends Model
     public function project(){
         return $this->belongsTo(Project::class);
     }
+    public function category(){
+        return $this->belongsTo(Category::class);
+    }
+
 
 }
