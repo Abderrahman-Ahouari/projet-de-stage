@@ -169,7 +169,8 @@ class AuthController extends Controller
             $user->tokens()->delete();
             $token = $user->createToken('filerouge')->plainTextToken;
 
-            return response()->json(['token' => $token, 'user' => $user]);
+            return redirect("http://localhost:5173/oauth-success?token=$token");
+
 
         } catch (\Laravel\Socialite\Two\InvalidStateException $e) {
             return response()->json(['error' => 'Invalid Google authentication state.'], 401);
