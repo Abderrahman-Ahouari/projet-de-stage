@@ -10,9 +10,12 @@ use Laravel\Sanctum\HasApiTokens;
 class Category extends Model
 {
     /** @use HasFactory<\Database\Factories\CategoryFactory> */
-    use HasFactory,HasApiTokens,HasUuids;
+    use HasFactory,HasApiTokens;
     protected $fillable = [
         'name'
     ];
     protected $casts = ['id'=>string];
+    public function tasks() {
+        return $this->hasMany(Task::class);
+    }
 }
