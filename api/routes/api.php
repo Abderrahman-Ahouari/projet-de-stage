@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ContributionController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TaskController;
+use App\Models\Contribution;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Laravel\Socialite\Facades\Socialite;
@@ -20,9 +22,10 @@ Route::name('auth')->group(function () {
 Route::middleware('auth:sanctum')->group(function(){
     Route::post('/logout',[AuthController::class,'logout'])->name('auth.logout');
     Route::apiResource('projects', ProjectController::class);
-    Route::prefix('projects/{project}')->group(function() {
-        Route::apiResource('tasks', TaskController::class);
-    });
+    Route::get('/user/projects', [ProjectController::class, 'userProjects']);
+    Route::apiResource('projects.contributions', ContributionController::class);
+    Route::get('/projects/{project}/admin', [ProjectController::class, 'admin']);
+    Route::apiResource('projects.tasks', TaskController::class);
 });
 
 Route::get('auth/google/redirect', [AuthController::class, 'redirectToGoogle']);
