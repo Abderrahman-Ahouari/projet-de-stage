@@ -1,49 +1,34 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // Don't forget to import useNavigate if not done already
+import { useLocation, useNavigate } from "react-router-dom"; // Don't forget to import useNavigate if not done already
 import { useAuth } from "../contexts/AuthContext";
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const {isLoggedIn,user,dispatch} = useAuth();
+  const {loading,isLoggedIn,user,logout} = useAuth();
+
   
   const navigate = useNavigate();
 
+
+
   useEffect(() => {
+   
+    
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
     };
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [isLoggedIn]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
   const handleLogout = async () => {
-    try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch("http://127.0.0.1:8000/api/logout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        localStorage.removeItem("token"); // Remove token on successful logout
-        dispatch({ type: "LOGOUT" }); 
-        navigate("/login"); // Redirect to login page
-      } else {
-        console.error("Logout failed:", await response.json());
-      }
-    } catch (error) {
-      console.error("An error occurred:", error);
-    }
+    logout();
   };
 
   const handleLogin = () => {
@@ -85,7 +70,7 @@ export default function Header() {
         <div className="flex items-center space-x-4">
           {!isLoggedIn ? (
             <button
-              className="rounded-full p-2 text-[#6b7280] hover:bg-[#f3f4f6]"
+              className="rounded-full p-2 text-[#6b7280] hover:bg-[#f3f4f6] cursor-pointer"
               onClick={handleLogin}
             >
               Login
@@ -107,7 +92,8 @@ export default function Header() {
 
               {!isMobile ? (
                 <button
-                  className="flex items-center space-x-1 rounded-md px-2 py-1 text-sm font-medium text-[#6b7280] hover:bg-[#f3f4f6]"
+                  className="flex items-center space-x-1 rounded-md px-2 py-1 text-sm font-medium text-[#6b7280] hover:bg-[#f3f4f6] cursor-pointer"
+                  disabled={loading}
                   onClick={handleLogout}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -115,7 +101,7 @@ export default function Header() {
                     <polyline points="16 17 21 12 16 7" />
                     <line x1="21" y1="12" x2="9" y2="12" />
                   </svg>
-                  <span>Logout</span>
+                  <span>{loading ? 'Logging out...' : 'Log out'}</span>
                 </button>
               ) : (
                 <button 
@@ -166,6 +152,18 @@ export default function Header() {
           </div>
         </div>
       )}
+      <RouteTracker/>
     </header>
   );
 }
+
+
+const RouteTracker = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    console.log("🧭 Route changed to:", location.pathname);
+  }, [location]);
+
+  return null; // This component doesn't render anything
+};
