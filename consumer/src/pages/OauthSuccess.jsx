@@ -1,24 +1,23 @@
 // pages/OAuthSuccess.jsx
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { getUser } from "../services/authService";
 
 function OAuthSuccess() {
   const navigate = useNavigate();
-
+  const {oLogin} = useAuth();
+  const {token} = useParams();
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
-
-    if (token) {
-      localStorage.setItem("token", token);
-      // Navigate to your protected/dashboard page
-      navigate("/dashboard");
-    } else {
-      // Handle error
-      navigate("/login");
-    }
-  }, []);
-
+     (async () => {
+      try {
+        oLogin(token)
+      } catch (err) {
+        console.error("Failed to fetch user", err);
+      } finally {navigate('/login')}
+    })();
+    
+  }, [oLogin, navigate]);
   return <p>Redirecting...</p>;
 }
 
