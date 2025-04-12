@@ -17,7 +17,7 @@ class ProjectController extends Controller
 
     public function index()
     {
-        $projects = Project::paginate(10);
+        $projects = Project::with('contributors')->paginate(10);
         if ($projects->isEmpty()) {
             return response()->json([
                 'message' => 'No projects found'
@@ -28,7 +28,8 @@ class ProjectController extends Controller
 
 
     public function userProjects(Request $request){
-        $projects = $request->user()->projects;
+        $projects = $request->user()->ownProjects;
+        $projects->load('contributors','tasks');
         return response()->json($projects);
     }
 
