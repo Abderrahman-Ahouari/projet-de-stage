@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { register } from "../services/authService"
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -21,8 +22,6 @@ export default function Register() {
       ...formData,
       [name]: value,
     })
-
-    // Clear error when field is edited
     if (errors[name]) {
       setErrors({
         ...errors,
@@ -47,7 +46,6 @@ export default function Register() {
       newErrors.email = "Please enter a valid email address"
     }
 
-    // Validate password
     if (!formData.password) {
       newErrors.password = "Password is required"
     } else if (formData.password.length < 8) {
@@ -75,24 +73,14 @@ export default function Register() {
 
     try {
       // Replace with your actual API endpoint
-      const response = await fetch("http://127.0.0.1:8000/api/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          password_confirmation: formData.password_confirmation,
-        }),
+      const response = await register({
+        username: formData.name,
+        email: formData.email,
+        password: formData.password,
+        password_confirmation: formData.password_confirmation,
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.message || "Registration failed")
-      }
+      const data = response.data
 
       // Handle successful registration
       setSuccess(true)
@@ -102,7 +90,9 @@ export default function Register() {
         localStorage.setItem("token", data.token)
       }
     } catch (err) {
-      setApiError(err.message || "An error occurred during registration")
+      setApiError(err.response.data.message)
+      
+      
     } finally {
       setLoading(false)
     }
@@ -120,7 +110,7 @@ export default function Register() {
         </div>
 
         {apiError && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md">
+          <div className="text-center mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md">
             {apiError}
           </div>
         )}
@@ -138,24 +128,24 @@ export default function Register() {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Full Name */}
+            
             <div className="space-y-1.5">
-              <label htmlFor="fullName" className="block text-sm font-medium text-[#374151]">
+              <label htmlFor="name" className="block text-sm font-medium text-[#374151]">
                 Full Name*
               </label>
               <input
-                id="fullName"
-                name="fullName"
+                id="name"
+                name="name"
                 type="text"
-                placeholder="Enter your full name"
-                value={formData.fullName}
+                placeholder="Enter your name"
+                value={formData.name}
                 onChange={handleChange}
                 className={`w-full rounded-md border px-3 py-2 text-[#1f2937] placeholder-[#adaebc]
                   focus:border-[#4f46e5] focus:outline-none
-                  ${errors.fullName ? "border-red-500" : "border-[#ced4da]"}`}
+                  ${errors.name ? "border-red-500" : "border-[#ced4da]"}`}
               />
-              {errors.fullName && (
-                <p className="mt-1 text-sm text-red-600">{errors.fullName}</p>
+              {errors.name && (
+                <p className="mt-1 text-sm text-red-600">{errors.name}</p>
               )}
             </div>
 
@@ -201,22 +191,22 @@ export default function Register() {
 
             {/* Confirm Password */}
             <div className="space-y-1.5">
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-[#374151]">
+              <label htmlFor="password_confirmation" className="block text-sm font-medium text-[#374151]">
                 Confirm Password*
               </label>
               <input
-                id="confirmPassword"
-                name="confirmPassword"
+                id="password_confirmation"
+                name="password_confirmation"
                 type="password"
                 placeholder="Confirm your password"
-                value={formData.confirmPassword}
+                value={formData.password_confirmation}
                 onChange={handleChange}
                 className={`w-full rounded-md border px-3 py-2 text-[#1f2937] placeholder-[#adaebc]
                   focus:border-[#4f46e5] focus:outline-none
-                  ${errors.confirmPassword ? "border-red-500" : "border-[#ced4da]"}`}
+                  ${errors.password_confirmation ? "border-red-500" : "border-[#ced4da]"}`}
               />
-              {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+              {errors.password_confirmation && (
+                <p className="mt-1 text-sm text-red-600">{errors.password_confirmation}</p>
               )}
             </div>
             {errors.terms && <p className="mt-1 text-sm text-red-600">{errors.terms}</p>}
@@ -225,7 +215,7 @@ export default function Register() {
             <button
               type="submit"
               disabled={loading}
-              className="mt-2 w-full rounded-md bg-[#2563eb] py-2.5 text-center font-medium text-white
+              className="cursor-pointer mt-2 w-full rounded-md bg-[#2563eb] py-2.5 text-center font-medium text-white
                 hover:bg-[#2563eb]/90 focus:outline-none focus:ring-2 focus:ring-[#2563eb]/50
                 disabled:opacity-50"
             >
@@ -255,9 +245,12 @@ export default function Register() {
               </div>
 
               <div className="mt-6 flex justify-center w-full">
-                <button className="flex w-full justify-center items-center space-x-2 rounded-md border border-[#e5e7eb] px-4 py-2 text-sm font-medium text-[#4b5563] hover:bg-[#f9fafb]">
-       
-                  <svg
+              <a
+                href="http://localhost:8000/auth/google/redirect"
+                type="button"
+                className="flex w-full items-center justify-center rounded-md border border-[#e5e7eb] bg-white px-4 py-2 text-sm font-medium text-[#1f2937] hover:bg-[#f9fafb] focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:ring-offset-2"
+              >
+                <svg
                   className="mr-2 h-5 w-5"
                   viewBox="0 0 24 24"
                   xmlns="http://www.w3.org/2000/svg"
@@ -279,8 +272,8 @@ export default function Register() {
                     fill="#EA4335"
                   />
                 </svg>
-                  <span>Google</span>
-                </button>
+                Google
+              </a>
               </div>
             </div>
           </>
