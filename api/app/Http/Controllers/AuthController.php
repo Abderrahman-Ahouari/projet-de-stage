@@ -55,13 +55,13 @@ class AuthController extends Controller
         // Validate the incoming request
         $request->validate([
             'email' => 'required|email|exists:users,email',
-            'password' => 'required|string',
+            'password' => 'required|min:8|string',
         ]);
 
         $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['error' => 'Invalid credentials'], 401);
+            return response()->json(['message' => 'Invalid credentials'], 401);
         }
         $user->tokens()->delete();
         $token = $user->createToken('filerouge')->plainTextToken;
@@ -169,7 +169,7 @@ class AuthController extends Controller
             $user->tokens()->delete();
             $token = $user->createToken('filerouge')->plainTextToken;
 
-            return redirect("http://localhost:5173/oauth-success?token=$token");
+            return redirect("http://localhost:5173/oauth-success/$token");
 
 
         } catch (\Laravel\Socialite\Two\InvalidStateException $e) {
