@@ -2,70 +2,66 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { login as apiLogin } from "../services/authService";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
+  const [errors, setErrors] = useState({});
+  const { login, loading, error, success, isLoggedIn } = useAuth();
   const navigate = useNavigate();
-useEffect(() => {
-    // Check if token exists in localStorage
-    const token = localStorage.getItem("token");
-    if (token) {
-      navigate("/");
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      setTimeout(() => {
+        navigate("/");
+      }, 1000);
     }
-}, []);
+  }, [isLoggedIn, navigate]);
+
+  const validateForm = () => {
+    const newErrors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!emailRegex.test(email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    if (!password) {
+      newErrors.password = "Password is required";
+    } else if (password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    try {
-      const response = await fetch("http://127.0.0.1:8000/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Login failed");
-      }
-
-
-      setSuccess(true);
-      
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-      }
-      location.href = "/";
-    } catch (err) {
-      setError(err.message || "An error occurred during login");
-    } finally {
-      setLoading(false);
-    }
+    if (!validateForm()) return;
+    login({ email, password });
   };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#f9fafb] p-4">
       <div className="relative w-full max-w-md overflow-hidden rounded-lg bg-white p-8 shadow-sm">
-        {/* Decorative element */}
         <div className="absolute right-0 top-0 h-32 w-32 rounded-bl-full bg-[#2563eb]/10"></div>
+
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md">
+          <div className="mb-4 p-3 text-center bg-red-50 border border-red-200 text-red-700 rounded-md">
             {error}
           </div>
         )}
         {success && (
-          <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-md">
+          <div className="mb-4 p-3 text-center bg-green-50 border border-green-200 text-green-700 rounded-md">
             Login successful!
           </div>
         )}
+
         <div className="relative">
           <h1 className="mb-2 text-center text-3xl font-semibold text-[#111827]">
             Welcome Back
@@ -75,6 +71,7 @@ useEffect(() => {
           </p>
 
           <form onSubmit={handleSubmit}>
+            {/* Email Field */}
             <div className="mb-4">
               <label
                 htmlFor="email"
@@ -86,13 +83,24 @@ useEffect(() => {
                 id="email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (errors.email) {
+                    setErrors((prev) => ({ ...prev, email: "" }));
+                  }
+                }}
                 placeholder="Enter your email"
-                className="w-full rounded-md border border-[#e5e7eb] px-3 py-2 text-[#1f2937] focus:border-[#2563eb] focus:outline-none focus:ring-1 focus:ring-[#2563eb]"
+                className={`w-full rounded-md border px-3 py-2 text-[#1f2937] focus:border-[#2563eb] focus:outline-none focus:ring-1 focus:ring-[#2563eb] ${
+                  errors.email ? "border-red-500" : "border-[#e5e7eb]"
+                }`}
                 required
               />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+              )}
             </div>
 
+            {/* Password Field */}
             <div className="mb-4">
               <label
                 htmlFor="password"
@@ -104,25 +112,26 @@ useEffect(() => {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (errors.password) {
+                    setErrors((prev) => ({ ...prev, password: "" }));
+                  }
+                }}
                 placeholder="Enter your password"
-                className="w-full rounded-md border border-[#e5e7eb] px-3 py-2 text-[#1f2937] focus:border-[#2563eb] focus:outline-none focus:ring-1 focus:ring-[#2563eb]"
+                className={`w-full rounded-md border px-3 py-2 text-[#1f2937] focus:border-[#2563eb] focus:outline-none focus:ring-1 focus:ring-[#2563eb] ${
+                  errors.password ? "border-red-500" : "border-[#e5e7eb]"
+                }`}
                 required
               />
-            </div>
-
-            <div className="mb-6 flex items-center justify-between">
-              <a
-                href="#"
-                className="text-sm font-medium text-[#2563eb] hover:underline"
-              >
-                Forgot password?
-              </a>
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+              )}
             </div>
 
             <button
               type="submit"
-              className="w-full rounded-md bg-[#2563eb] py-2 text-center font-medium text-white hover:bg-[#2563eb]/90 focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:ring-offset-2"
+              className="cursor-pointer w-full rounded-md bg-[#2563eb] py-2 text-center font-medium text-white hover:bg-[#2563eb]/90 focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:ring-offset-2 disabled:opacity-50"
               disabled={loading}
             >
               {loading ? "Logging in..." : "Login"}
@@ -131,7 +140,10 @@ useEffect(() => {
 
           <div className="mt-4 text-center text-sm text-[#4b5563]">
             Don't have an account?{" "}
-            <a href="#" className="font-medium text-[#2563eb] hover:underline">
+            <a
+              href="/register"
+              className="font-medium text-[#2563eb] hover:underline"
+            >
               Sign up
             </a>
           </div>
@@ -154,6 +166,7 @@ useEffect(() => {
                 type="button"
                 className="flex w-full items-center justify-center rounded-md border border-[#e5e7eb] bg-white px-4 py-2 text-sm font-medium text-[#1f2937] hover:bg-[#f9fafb] focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:ring-offset-2"
               >
+                {/* Google SVG */}
                 <svg
                   className="mr-2 h-5 w-5"
                   viewBox="0 0 24 24"
@@ -185,5 +198,3 @@ useEffect(() => {
     </div>
   );
 }
-
-
