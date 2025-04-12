@@ -49,8 +49,6 @@ export default function AuthProvider({ children }) {
       localStorage.setItem('user',JSON.stringify(user));
       dispatch({ type: 'LOGIN_SUCCESS', payload: { user, token } });
     } catch (error) {
-      console.log(error);
-      
       dispatch({ type: 'LOGIN_FAILURE', payload: error.response.data.message });
     }
   }, []);
@@ -77,7 +75,10 @@ export default function AuthProvider({ children }) {
         
         navigate("/login"); // Redirect to login page
     } catch (error) {
-      console.error("An error occurred:", error);
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      dispatch({ type: "LOGOUT" });
+      navigate('/login'); 
     }
   }, []);
 

@@ -11,6 +11,7 @@ import Progress from "./pages/Progress";
 import ManageTeam from "./pages/ManageTeam";
 import OAuthSuccess from "./pages/OauthSuccess";
 import AuthProvider from "./contexts/AuthContext";
+import ProjectsProvider from "./contexts/ProjectsContext";
 
 
 export default function App() {
@@ -18,7 +19,8 @@ export default function App() {
   return (
     <Router>
       <AuthProvider>
-      <Header />
+      <ProjectsProvider>
+        <Header />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -28,6 +30,7 @@ export default function App() {
         <Route path="/manage-team" element={<ManageTeam/>} />
         <Route path="/oauth-success/:token" element={<OAuthSuccess/>} />
       </Routes>
+      </ProjectsProvider>
     </AuthProvider>
     </Router>
   );
