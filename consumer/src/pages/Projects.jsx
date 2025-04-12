@@ -1,76 +1,87 @@
+import { useEffect } from "react";
 import ProjectCard from "../components/ProjectCard"
+import { useProjects } from "../contexts/ProjectsContext";
 
 // Fake projects data
-const projects = [
-  {
-    id: 1,
-    icon: "website",
-    title: "Website Redesign",
-    description: "Complete overhaul of the company website with modern design system",
-    users: ["/placeholder.svg", "/placeholder.svg", "/placeholder.svg"],
-    timeLeft: "2 days left",
-    tasks: { completed: 12, total: 15 },
-    progress: 80,
-    progressColor: "blue",
-  },
-  {
-    id: 2,
-    icon: "mobile",
-    title: "Mobile App",
-    description: "Native mobile application for iOS and Android platforms",
-    users: ["/placeholder.svg", "/placeholder.svg"],
-    timeLeft: "1 week left",
-    tasks: { completed: 8, total: 20 },
-    progress: 40,
-    progressColor: "purple",
-  },
-  {
-    id: 3,
-    icon: "analytics",
-    title: "Analytics Dashboard",
-    description: "Real-time analytics dashboard with interactive charts",
-    users: ["/placeholder.svg", "/placeholder.svg"],
-    timeLeft: "5 days left",
-    tasks: { completed: 15, total: 18 },
-    progress: 85,
-    progressColor: "green",
-  },
-  {
-    id: 4,
-    icon: "mobile",
-    title: "Mobile App",
-    description: "Native mobile application for iOS and Android platforms",
-    users: ["/placeholder.svg", "/placeholder.svg"],
-    timeLeft: "1 week left",
-    tasks: { completed: 8, total: 20 },
-    progress: 40,
-    progressColor: "purple",
-  },
-  {
-    id: 5,
-    icon: "mobile",
-    title: "Mobile App",
-    description: "Native mobile application for iOS and Android platforms",
-    users: ["/placeholder.svg", "/placeholder.svg"],
-    timeLeft: "1 week left",
-    tasks: { completed: 8, total: 20 },
-    progress: 40,
-    progressColor: "purple",
-  },
-  {
-    id: 6,
-    icon: "mobile",
-    title: "Mobile App",
-    description: "Native mobile application for iOS and Android platforms",
-    users: ["/placeholder.svg", "/placeholder.svg"],
-    timeLeft: "1 week left",
-    tasks: { completed: 8, total: 20 },
-    progress: 40,
-    progressColor: "purple",
-  },
-]
+// const projects = [
+//   {
+//     id: 1,
+//     icon: "website",
+//     title: "Website Redesign",
+//     description: "Complete overhaul of the company website with modern design system",
+//     users: ["/placeholder.svg", "/placeholder.svg", "/placeholder.svg"],
+//     timeLeft: "2 days left",
+//     tasks: { completed: 12, total: 15 },
+//     progress: 80,
+//     progressColor: "blue",
+//   },
+//   {
+//     id: 2,
+//     icon: "mobile",
+//     title: "Mobile App",
+//     description: "Native mobile application for iOS and Android platforms",
+//     users: ["/placeholder.svg", "/placeholder.svg"],
+//     timeLeft: "1 week left",
+//     tasks: { completed: 8, total: 20 },
+//     progress: 40,
+//     progressColor: "purple",
+//   },
+//   {
+//     id: 3,
+//     icon: "analytics",
+//     title: "Analytics Dashboard",
+//     description: "Real-time analytics dashboard with interactive charts",
+//     users: ["/placeholder.svg", "/placeholder.svg"],
+//     timeLeft: "5 days left",
+//     tasks: { completed: 15, total: 18 },
+//     progress: 85,
+//     progressColor: "green",
+//   },
+//   {
+//     id: 4,
+//     icon: "mobile",
+//     title: "Mobile App",
+//     description: "Native mobile application for iOS and Android platforms",
+//     users: ["/placeholder.svg", "/placeholder.svg"],
+//     timeLeft: "1 week left",
+//     tasks: { completed: 8, total: 20 },
+//     progress: 40,
+//     progressColor: "purple",
+//   },
+//   {
+//     id: 5,
+//     icon: "mobile",
+//     title: "Mobile App",
+//     description: "Native mobile application for iOS and Android platforms",
+//     users: ["/placeholder.svg", "/placeholder.svg"],
+//     timeLeft: "1 week left",
+//     tasks: { completed: 8, total: 20 },
+//     progress: 40,
+//     progressColor: "purple",
+//   },
+//   {
+//     id: 6,
+//     icon: "mobile",
+//     title: "Mobile App",
+//     description: "Native mobile application for iOS and Android platforms",
+//     users: ["/placeholder.svg", "/placeholder.svg"],
+//     timeLeft: "1 week left",
+//     tasks: { completed: 8, total: 20 },
+//     progress: 40,
+//     progressColor: "purple",
+//   },
+// ]
 
 function Projects() {
+
+  const {projects,fetchProjects} = useProjects();
+  useEffect(()=>{
+    fetchProjects()
+    
+  },[])
+  useEffect(()=>{
+    console.log(projects);
+  },[projects])
   return (
     <div className="min-h-screen bg-white">
 
@@ -101,14 +112,14 @@ function Projects() {
           {projects.map((project) => (
             <ProjectCard
               key={project.id}
-              icon={project.icon}
+              icon={'..'}
               title={project.title}
               description={project.description}
-              users={project.users}
-              timeLeft={project.timeLeft}
+              users={project.contributors}
+              timeLeft={'rrrr'}
               tasks={project.tasks}
-              progress={project.progress}
-              progressColor={project.progressColor}
+              progress={'eee'}
+              progressColor={'rr'}
             />
           ))}
         </div>
