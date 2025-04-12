@@ -1,94 +1,106 @@
-import { createContext, useContext, useEffect, useReducer } from "react";
 
 
-
+import { createContext, useCallback, useContext, useEffect, useReducer } from "react";
+import { getUser,login as axiosLogin,logout as axiosLogout } from "../services/authService"; 
+import { useNavigate } from "react-router-dom";
 
 
 const initialState = {
-    isLoggedIn: false,
-    user: null,
-    token: null,
-}
-
-const reducer = (state, action) => {
-    switch (action.type) {
-        case 'LOGIN':
-            return {
-                ...state,
-                isLoggedIn: true,
-                user: action.payload.user,
-                token: action.payload.token,
-            };
-        case 'LOGOUT':
-            return {
-                ...state,
-                isLoggedIn: false,
-                user: null,
-                token: null,
-            };
-        default:
-            return state;
-    }
+  isLoggedIn: !!JSON.parse(localStorage.getItem("token")),
+  user: JSON.parse(localStorage.getItem("user")),
+  token: JSON.parse(localStorage.getItem("token")) || null,
+  loading: false,
+  success: false,
+  error : null
 };
 
+function authReducer(state, action) {
+  switch (action.type) {
+    case 'LOGIN_START':
+      return { ...state, loading: true, error: null };
+    case 'LOGIN_SUCCESS':
+      return { ...state, user: action.payload.user, token: action.payload.token, loading: false,success : true,isLoggedIn:true };
+    case 'LOGIN_FAILURE':
+      return { ...state, error: action.payload, loading: false };
+    case 'LOGOUT':
+      return { ...initialState };
+    case 'LOADING':
+      return { ...state,loading : !state.loading };
+    default:
+      return state;
+  }
+}
 
-const AuthContext  = createContext();
+const AuthContext = createContext();
 
+export default function AuthProvider({ children }) {
+  const [state, dispatch] = useReducer(
+    authReducer,
+    initialState
+  );
+  const navigate = useNavigate();
 
-
-
-export default function AuthProvider({children}) {
-    const [{isLoggedIn,user,token}, dispatch] = useReducer(reducer, initialState);
-    
-    
-    useEffect(() => {
-
-        const token = localStorage.getItem('token');
-        if(!!token)
-        (async () => {
-            try {
-              const res = await fetch("http://127.0.0.1:8000/api/user", {
-                method: "GET",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
-                },
-              });
+  const login = useCallback(async (credentials) => {
+    dispatch({ type: 'LOGIN_START' });
+    try {
+      const response = await axiosLogin(credentials);  
+      const { user, token } = response.data;
+      localStorage.setItem('token',JSON.stringify(token));
+      localStorage.setItem('user',JSON.stringify(user));
+      dispatch({ type: 'LOGIN_SUCCESS', payload: { user, token } });
+    } catch (error) {
+      console.log(error);
       
-              if (!res.ok) throw new Error("Failed to fetch user");
-      
-              const userData = await res.json();
-              dispatch({
-                type: "LOGIN",
-                payload: { user: userData, token },
-              });
-            } catch (err) {
-              console.error("AuthProvider fetch user error:", err);
-              localStorage.removeItem("token");
-              dispatch({ type: "LOGOUT" });
-            }
-          })();
-          
-},[]);
+      dispatch({ type: 'LOGIN_FAILURE', payload: error.response.data.message });
+    }
+  }, []);
+  const oLogin = useCallback(async(token)=>{
+    dispatch({ type: 'LOGIN_START' });
+    try {
+      localStorage.setItem('token',JSON.stringify(token));
+      const response = await getUser("token");
+      const user = response.data;
+      localStorage.setItem('user',JSON.stringify(user));
+      dispatch({ type: 'LOGIN_SUCCESS', payload: { user, token } });
+    }catch(error){
+      dispatch({ type: 'LOGIN_FAILURE', payload: error.message });
+    }
+  },[])
+
+  const logout = useCallback(async () => {
+    dispatch({type : 'LOADING'});
+    try {
+      const response = await axiosLogout();
+        localStorage.removeItem("token"); 
+        dispatch({ type: "LOADING" }); 
+        dispatch({ type: "LOGOUT" }); 
+        
+        navigate("/login"); // Redirect to login page
+    } catch (error) {
+      console.error("An error occurred:", error);
+    }
+  }, []);
+
+
   return (
     <AuthContext.Provider
-      value={{ 
-        isLoggedIn,
-        user,
-        token,
+      value={{
+        ...state,
         dispatch,
-       }}
+        login,
+        oLogin,
+        logout
+      }}
     >
-        {children}
+      {children}
     </AuthContext.Provider>
-  )
+  );
 }
-
 
 export const useAuth = () => {
-    const context = useContext(AuthContext);
-   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-   }
-    return context;
-}
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};
