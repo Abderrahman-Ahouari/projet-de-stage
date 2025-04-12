@@ -1,29 +1,5 @@
-function ProjectCard({ icon, title, description, users, timeLeft, tasks, progress, progressColor }) {
-    const getIconBg = () => {
-      switch (icon) {
-        case "website":
-          return "bg-[#dbeafe]"
-        case "mobile":
-          return "bg-[#ede9fe]"
-        case "analytics":
-          return "bg-[#d1fae5]"
-        default:
-          return "bg-[#e0e7ff]"
-      }
-    }
-  
-    const getIconColor = () => {
-      switch (icon) {
-        case "website":
-          return "text-[#2563eb]"
-        case "mobile":
-          return "text-[#7c3aed]"
-        case "analytics":
-          return "text-[#059669]"
-        default:
-          return "text-[#4f46e5]"
-      }
-    }
+function ProjectCard({ icon, title, description, users, timeLeft, tasks, progressColor }) {
+
   
     const getProgressColor = () => {
       switch (progressColor) {
@@ -37,62 +13,12 @@ function ProjectCard({ icon, title, description, users, timeLeft, tasks, progres
           return "bg-[#4f46e5]"
       }
     }
+    const total = tasks.filter(task=>task.status === 'done').length
+    const progress = (tasks.filter(task=>task.status === 'done').length/tasks.length) * 100
   
     return (
       <div className="bg-white border border-[#e5e7eb] rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
         <div className="flex justify-between items-start mb-3">
-          <div className={`w-8 h-8 ${getIconBg()} ${getIconColor()} rounded-lg flex items-center justify-center`}>
-            {icon === "website" && (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-                <path d="M2 17l10 5 10-5"></path>
-                <path d="M2 12l10 5 10-5"></path>
-              </svg>
-            )}
-            {icon === "mobile" && (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
-                <line x1="12" y1="18" x2="12" y2="18"></line>
-              </svg>
-            )}
-            {icon === "analytics" && (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="18" y1="20" x2="18" y2="10"></line>
-                <line x1="12" y1="20" x2="12" y2="4"></line>
-                <line x1="6" y1="20" x2="6" y2="14"></line>
-              </svg>
-            )}
-          </div>
           <button className="text-[#6b7280] hover:text-[#111827]">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -119,7 +45,7 @@ function ProjectCard({ icon, title, description, users, timeLeft, tasks, progres
           <div className="flex -space-x-2">
             {users.map((user, i) => (
               <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-[#e5e7eb] overflow-hidden">
-                <img src={user || "/placeholder.svg"} alt="Team member" className="w-full h-full object-cover" />
+                <img src={user.avatar} alt="Team member" className="w-full h-full object-cover" />
               </div>
             ))}
           </div>
@@ -163,7 +89,7 @@ function ProjectCard({ icon, title, description, users, timeLeft, tasks, progres
             <line x1="3" y1="12" x2="3.01" y2="12"></line>
             <line x1="3" y1="18" x2="3.01" y2="18"></line>
           </svg>
-          {tasks.completed}/{tasks.total} tasks
+          {tasks.filter(task=>task.status === 'done').length}/{tasks.length} tasks
         </div>
   
         <div className="w-full h-2 bg-[#f3f4f6] rounded-full overflow-hidden">
