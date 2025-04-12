@@ -16,8 +16,8 @@ import AuthProvider from "./contexts/AuthContext";
 export default function App() {
 
   return (
-    <AuthProvider>
     <Router>
+      <AuthProvider>
       <Header />
       <Routes>
         <Route path="/login" element={<Login />} />
@@ -26,10 +26,10 @@ export default function App() {
         <Route path="/kanban" element={<Kanban/>} />
         <Route path="/progress" element={<Progress/>} />
         <Route path="/manage-team" element={<ManageTeam/>} />
-        <Route path="/oauth-success" element={<OAuthSuccess/>} />
+        <Route path="/oauth-success/:token" element={<OAuthSuccess/>} />
       </Routes>
-    </Router>
     </AuthProvider>
+    </Router>
   );
 }
 
