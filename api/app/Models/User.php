@@ -55,7 +55,7 @@ class User extends Authenticatable
     public function ownProjects()
     {
         return $this->belongsToMany(Project::class, 'contributions')
-            ->wherePivot('role_id', 1); // assuming 'role' is the column name
+            ->wherePivot('role_id', 1);
     }
 
 
