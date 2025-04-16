@@ -16,6 +16,13 @@ return new class extends Migration
             $table->string('name');
             $table->timestamps();
         });
+        if (!DB::table('roles')->where('name', 'admin')->exists()) {
+            DB::table('roles')->insert([
+                ['name' => 'admin'],
+                ['name' => 'read'],
+                ['name' => 'write'],
+            ]);
+        }
     }
 
     /**
