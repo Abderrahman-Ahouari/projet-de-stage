@@ -31,6 +31,7 @@ class Task extends Model
     public function category(){
         return $this->belongsTo(Category::class);
     }
-
-
+    public function assignees(){
+        return $this->belongsToMany(User::class,'assignments');
+    }
 }
