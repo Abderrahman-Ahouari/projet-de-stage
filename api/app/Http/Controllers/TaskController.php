@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Task;
 use App\Models\Project;
 use App\Models\Category;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -16,7 +17,7 @@ class TaskController extends Controller
         return response()->json($tasks);
     }
 
-    
+
     public function store(Request $request, Project $project)
     {
         // Validate the incoming request data
@@ -67,7 +68,6 @@ class TaskController extends Controller
         return response()->json(['task'=>$task],200);
     }
 
-
     public function destroy(Project $project, Task $task)
     {
         if ($task->project_id !== $project->id) {
@@ -78,4 +78,24 @@ class TaskController extends Controller
 
         return response()->json(['message' => 'Task deleted successfully.'], 200);
     }
+
+    public function assign(Project $project,Task $task,Request $request){
+        $data = $request->validate([
+            'user_id'=> 'required|exists:users,id'
+        ]);
+
+
+        $user = User::findOrFail($data['user_id']);
+        $user->tasks()->attach($task);
+        return response()->json(['message' => 'Task assigned successfully.'], 200);
+    }
+    public function unAssign(Project $project,Task $task,Request $request){
+        $data = $request->validate([
+            'user_id'=> 'required|exists:users,id'
+        ]);
+        $user = User::findOrFail($data['user_id']);
+        $user->tasks()->detach($task);
+        return response()->json(['message' => 'Task unassigned successfully.'], 200);
+    }
+
 }
