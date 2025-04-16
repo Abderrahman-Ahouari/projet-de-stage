@@ -16,9 +16,10 @@ return new class extends Migration
             $table->string('title');
             $table->string('description')->nullable();
             $table->uuid('project_id');
-            $table->foreign('project_id')->references('id')->on('projects');
+            $table->foreign('project_id')->references('id')->on('projects')->cascadeOnDelete();
             $table->enum('status', ['todo', 'doing', 'review', 'done'])->default('todo');
             $table->foreignId('category_id')->nullable()->constrained('categories');
+            $table->timestamp('deadline')->nullable();
             $table->timestamps();
         });
     }
