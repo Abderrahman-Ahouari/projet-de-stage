@@ -32,21 +32,23 @@ class ProjectController extends Controller
         $projects->load('contributors','tasks');
         return response()->json($projects);
     }
+    public function sharedProjects(Request $request){
+        $projects = $request->user()->sharedProjects;
+        $projects->load('contributors','tasks');
+        return response()->json($projects);
+    }
 
     public function store(Request $request)
     {
+        // return response()->json($request->all());
         $data = $request->validate([
             'title' => 'required|string|max:20',
             'description' => 'string|max:255',
+            'deadline' => 'required|date|after_or_equal:today'
         ]);
         $project = Project::create($data);
-        if($project){
-            Contribution::create([
-                'role_id' => Role::where('name', 'admin')->first()->id,
-                'user_id' => $request->user()->id,
-                'project_id' => $project->id,
-            ]);
-        }
+        if($project)
+        $request->user()->ownProjects()->attach($project,['role_id'=>1]);
         return response()->json(['project' => $project], 201);
     }
 
