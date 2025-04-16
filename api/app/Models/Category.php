@@ -14,7 +14,7 @@ class Category extends Model
     protected $fillable = [
         'name'
     ];
-    protected $casts = ['id'=>string];
+    protected $casts = ['id'=>'string'];
     public function tasks() {
         return $this->hasMany(Task::class);
     }
