@@ -15,6 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary()->default(DB::raw('uuid_generate_v4()'));
             $table->string('title');
             $table->string('description')->nullable();
+            $table->timestamp('deadline')->nullable();
             $table->timestamps();
         });
     }
