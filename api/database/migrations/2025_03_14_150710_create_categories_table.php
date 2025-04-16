@@ -16,6 +16,13 @@ return new class extends Migration
             $table->string('name');
             $table->timestamps();
         });
+        if (!DB::table('categories')->where('name', 'basic')->exists()) {
+            DB::table('categories')->insert([
+                ['name' => 'basic'],
+                ['name' => 'feature'],
+                ['name' => 'bug'],
+            ]);
+        }
     }
 
     /**
