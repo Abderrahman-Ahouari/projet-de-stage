@@ -169,7 +169,7 @@ class AuthController extends Controller
             $user->tokens()->delete();
             $token = $user->createToken('filerouge')->plainTextToken;
 
-            return redirect("http://localhost:5173/oauth-success/$token");
+            return redirect("http://localhost:3000/oauth-success/$token");
 
 
         } catch (\Laravel\Socialite\Two\InvalidStateException $e) {
