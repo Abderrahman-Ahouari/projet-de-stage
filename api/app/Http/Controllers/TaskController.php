@@ -14,6 +14,7 @@ class TaskController extends Controller
     public function index(Project $project)
     {
         $tasks = $project->tasks;
+        $tasks->load('assignees', 'category');
         return response()->json($tasks);
     }
 
@@ -60,7 +61,7 @@ class TaskController extends Controller
             'title' => 'sometimes|string|max:255',
             'description' => 'nullable|string',
             'status' => 'sometimes|required|in:todo,doing,review,done',
-            'category_id' => 'nullable|uuid|exists:categories,id',
+            'category_id' => 'nullable|exists:categories,id',
         ]);
 
         // Update the task with the validated data
@@ -89,7 +90,7 @@ class TaskController extends Controller
         $user->tasks()->attach($task);
         return response()->json(['message' => 'Task assigned successfully.'], 200);
     }
-    public function unAssign(Project $project,Task $task,Request $request){
+    public function unassign(Project $project,Task $task,Request $request){
         $data = $request->validate([
             'user_id'=> 'required|exists:users,id'
         ]);
