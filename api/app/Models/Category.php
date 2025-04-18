@@ -14,6 +14,11 @@ class Category extends Model
     protected $fillable = [
         'name'
     ];
+    public function project() {
+        return $this->belongsTo(Project::class);
+    }
+
+
     protected $casts = ['id'=>'string'];
     public function tasks() {
         return $this->hasMany(Task::class);
