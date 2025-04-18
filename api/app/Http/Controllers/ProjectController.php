@@ -12,7 +12,6 @@ class ProjectController extends Controller
     public function admin(Project $project){
         $admin = $project->admin;
         return response()->json($admin);
-
     }
 
     public function index()
@@ -23,9 +22,18 @@ class ProjectController extends Controller
                 'message' => 'No projects found'
             ], 404);
         }
+        $projects->load('roles');
+        $projects->load('categories');
         return response()->json($projects);
     }
 
+    public function show(Project $project){
+        $project->load(['contributors', 'tasks', 'categories.tasks', 'roles']);
+    foreach ($project->contributors as $contributor) {
+        $contributor->setRelation('tasks', $contributor->tasks($project->id)->get());
+    }
+        return response()->json($project);
+    }
 
     public function userProjects(Request $request){
         $projects = $request->user()->ownProjects;
@@ -50,11 +58,6 @@ class ProjectController extends Controller
         if($project)
         $request->user()->ownProjects()->attach($project,['role_id'=>1]);
         return response()->json(['project' => $project], 201);
-    }
-
-    public function show(Project $project)
-    {
-        return response()->json($project);
     }
 
 
