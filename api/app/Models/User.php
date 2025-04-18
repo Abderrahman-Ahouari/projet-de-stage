@@ -57,6 +57,18 @@ class User extends Authenticatable
         return $this->belongsToMany(Project::class, 'contributions')
             ->wherePivot('role_id', 1);
     }
+    public function sharedProjects()
+    {
+        return $this->belongsToMany(Project::class, 'contributions')
+            ->withPivot('role_id')
+            ->wherePivot('role_id','!=', 1);
+    }
+
+    public function tasks($projectId){
+        return $this->belongsToMany(Task::class,'assignments')
+              ->withPivot('project_id')
+              ->wherePivot('project_id',$projectId);
+    }
 
 
     protected static function boot()
