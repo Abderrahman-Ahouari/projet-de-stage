@@ -1,0 +1,62 @@
+version: "3.9"
+
+services:
+  # Laravel App Service
+  app:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: api
+    restart: unless-stopped
+    working_dir: /var/www/html
+    environment:
+      APP_SERVICE_USER: www-data
+    volumes:
+      - ./api:/var/www/html
+    ports:
+      - "8000:8000"
+    networks:
+      - laravel_network
+    depends_on:
+      - db
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./consumer
+      dockerfile: Dockerfile
+    container_name: consumer
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./consumer:/app
+      - /app/node_modules
+    networks:
+      - laravel_network
+
+  # PostgreSQL Service
+  db:
+    image: postgres:latest
+    container_name: postgres_db
+    restart: unless-stopped
+    env_file:
+      - ./api/.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: filerouge
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "password"
+    networks:
+      - laravel_network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  laravel_network:
+    driver: bridge
