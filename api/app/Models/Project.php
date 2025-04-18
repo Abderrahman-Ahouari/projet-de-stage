@@ -17,8 +17,14 @@ class Project extends Model
     }
     public function contributors(){
         return $this->belongsToMany(User::class,'contributions')
-        ->withPivot('role_id')
+        ->withPivot('id','role_id')
         ->wherePivot('role_id','!=',1);
+    }
+    public function categories(){
+        return $this->hasMany(Category::class);
+    }
+    public function roles(){
+        return $this->hasMany(Role::class);
     }
     public function admin(){
         return $this->belongsToMany(User::class,'contributions')
@@ -27,7 +33,8 @@ class Project extends Model
     }
     protected $fillable = [
         'title',
-        'description'
+        'description',
+        'deadline'
     ];
     protected function casts(): array
     {
