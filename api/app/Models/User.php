@@ -69,6 +69,12 @@ class User extends Authenticatable
               ->withPivot('project_id')
               ->wherePivot('project_id',$projectId);
     }
+    public function role($projectId){
+        return $this->belongsToMany(Role::class,'contributions')
+              ->withPivot('project_id')
+              ->wherePivot('project_id',$projectId);
+    }
+
 
 
     protected static function boot()
