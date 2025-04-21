@@ -17,6 +17,7 @@ return new class extends Migration
             $table->uuid('project_id');
             $table->foreign('project_id')->references('id')->on('projects')->cascadeOnDelete();
             $table->timestamps();
+            $table->unique(['name', 'project_id']);
         });
         if (!DB::table('categories')->where('name', 'basic')->exists()) {
             DB::table('categories')->insert([
