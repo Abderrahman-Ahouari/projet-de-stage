@@ -11,7 +11,13 @@ class ContributionController extends Controller
 
     public function index(Project $project)
     {
-        return response()->json($project->contributors);
+        $contributors = $project->contributors()->get();
+
+        $contributors->each(function ($contributor) use ($project) {
+            $contributor->status = $contributor->tokens()->exists();
+            $contributor->setRelation('role', $contributor->role($project->id)->first());
+        });
+        return response()->json($contributors);
     }
 
     public function store(Request $request, Project $project)
@@ -26,7 +32,7 @@ class ContributionController extends Controller
     }
 
 
-    public function show(Project $project,Contribution $contribution)
+    public function show(Project $project, Contribution $contribution)
     {
         return response()->json($contribution);
     }
@@ -34,18 +40,22 @@ class ContributionController extends Controller
 
 
 
-    public function update(Request $request,Project $project, Contribution $contribution)
+    public function update(Request $request, Project $project)
     {
-        $request->validate([
+        $data = $request->validate([
             'role_id' => 'required|exists:roles,id',
+            'user_id' => 'required|exists:users,id',
         ]);
-        $contribution->update($request->all());
+        $project->contributors()->updateExistingPivot($request->user_id, [
+            'role_id' => $request->role_id,
+        ]);
+
         return response()->json("Contribution updated successfully");
     }
 
-    public function destroy(Project $project ,Contribution $contribution)
+    public function destroy(Project $project,Request $request)
     {
-        $contribution->delete();
+        $project->contributors()->detach($request->user_id);
         return response()->json("Contribution deleted successfully");
     }
 }
