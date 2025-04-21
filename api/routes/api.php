@@ -28,6 +28,8 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::get('/user/projects', [ProjectController::class, 'userProjects']);
     Route::get('/user/shared', [ProjectController::class, 'sharedProjects']);
     Route::apiResource('projects.contributions', ContributionController::class);
+    Route::put('projects/{project}/contributions', [ContributionController::class,'update']);
+    Route::delete('projects/{project}/contributions', [ContributionController::class,'destroy']);
     Route::get('/projects/{project}/admin', [ProjectController::class, 'admin']);
     Route::apiResource('projects.tasks', TaskController::class);
     Route::apiResource('projects.categories',CategoryController::class);
