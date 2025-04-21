@@ -13,11 +13,13 @@ class TaskController extends Controller
 {
     public function index(Project $project)
     {
-        $tasks = $project->tasks;
-        $tasks->load('assignees', 'category');
+        $tasks = $project->tasks()
+            ->with(['assignees', 'category'])
+            ->orderBy('updated_at', 'asc') // or 'asc' if you want oldest first
+            ->get();
+
         return response()->json($tasks);
     }
-
 
     public function store(Request $request, Project $project)
     {
@@ -51,12 +53,10 @@ class TaskController extends Controller
 
     public function update(Request $request, Project $project, Task $task)
     {
-        // Check if the task belongs to the specified project
         if ($task->project_id !== $project->id) {
             return response()->json(['message' => 'Task not found in this project.'], 404);
         }
 
-        // Validate the incoming request data
         $validated = $request->validate([
             'title' => 'sometimes|string|max:255',
             'description' => 'nullable|string',
@@ -64,10 +64,17 @@ class TaskController extends Controller
             'category_id' => 'nullable|exists:categories,id',
         ]);
 
-        // Update the task with the validated data
-        $task->update($validated);
-        return response()->json(['task'=>$task],200);
+        if (isset($validated['category_id'])) {
+            $task->fill($validated);
+            $task->timestamps = false; // this prevents `updated_at` from being touched
+            $task->save();
+        } else {
+            $task->update($validated);
+        }
+
+        return response()->json(['task' => $task], 200);
     }
+
 
     public function destroy(Project $project, Task $task)
     {
@@ -81,13 +88,24 @@ class TaskController extends Controller
     }
 
     public function assign(Project $project,Task $task,Request $request){
+
         $data = $request->validate([
             'user_id'=> 'required|exists:users,id'
         ]);
 
 
         $user = User::findOrFail($data['user_id']);
-        $user->tasks()->attach($task);
+        $already = $user->tasks($project->id)
+        ->where('tasks.id', $task->id)
+        ->wherePivot('project_id', $project->id)
+        ->exists();
+
+    if ($already) {
+        return response()->json(['message' => 'User already assigned to that task in this project.'], 422);
+    }
+        $user->tasks($project->id)->attach($task,[
+            'project_id' => $project->id,
+        ]);
         return response()->json(['message' => 'Task assigned successfully.'], 200);
     }
     public function unassign(Project $project,Task $task,Request $request){
@@ -95,7 +113,15 @@ class TaskController extends Controller
             'user_id'=> 'required|exists:users,id'
         ]);
         $user = User::findOrFail($data['user_id']);
-        $user->tasks()->detach($task);
+        $already = $user->tasks($project->id)
+        ->where('tasks.id', $task->id)
+        ->wherePivot('project_id', $project->id)
+        ->exists();
+
+    if (!$already) {
+        return response()->json(['message' => 'User was not assigned to that task in this project.'], 422);
+    }
+        $user->tasks($project->id)->detach($task);
         return response()->json(['message' => 'Task unassigned successfully.'], 200);
     }
 
