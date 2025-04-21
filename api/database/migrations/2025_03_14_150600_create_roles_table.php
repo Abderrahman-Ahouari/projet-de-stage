@@ -17,6 +17,7 @@ return new class extends Migration
             $table->uuid('project_id');
             $table->foreign('project_id')->references('id')->on('projects')->cascadeOnDelete();
             $table->timestamps();
+            $table->unique(['name', 'project_id']);
         });
         if (!DB::table('roles')->where('name', 'admin')->exists()) {
             DB::table('roles')->insert([
