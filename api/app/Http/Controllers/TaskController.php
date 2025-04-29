@@ -13,6 +13,7 @@ class TaskController extends Controller
 {
     public function index(Project $project)
     {
+        $this->authorize('consultProject', $project);
         $tasks = $project->tasks()
             ->with(['assignees', 'category'])
             ->orderBy('updated_at', 'asc') // or 'asc' if you want oldest first
@@ -23,6 +24,7 @@ class TaskController extends Controller
 
     public function store(Request $request, Project $project)
     {
+        $this->authorize('addTask', $project);
         // Validate the incoming request data
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -53,6 +55,7 @@ class TaskController extends Controller
 
     public function update(Request $request, Project $project, Task $task)
     {
+        $this->authorize('updateTaskStatus', $project);
         if ($task->project_id !== $project->id) {
             return response()->json(['message' => 'Task not found in this project.'], 404);
         }
@@ -78,6 +81,7 @@ class TaskController extends Controller
 
     public function destroy(Project $project, Task $task)
     {
+        $this->authorize('deleteTask', $project);
         if ($task->project_id !== $project->id) {
             return response()->json(['message' => 'Task not found in this project.'], 404);
         }
@@ -89,6 +93,7 @@ class TaskController extends Controller
 
     public function assign(Project $project,Task $task,Request $request){
 
+        $this->authorize('assignTask', $project);
         $data = $request->validate([
             'user_id'=> 'required|exists:users,id'
         ]);
@@ -109,6 +114,7 @@ class TaskController extends Controller
         return response()->json(['message' => 'Task assigned successfully.'], 200);
     }
     public function unassign(Project $project,Task $task,Request $request){
+        $this->authorize('assignTask', $project);
         $data = $request->validate([
             'user_id'=> 'required|exists:users,id'
         ]);
