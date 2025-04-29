@@ -17,6 +17,7 @@ class CategoryController extends Controller
 
     public function store(Request $request , Project $project)
     {
+        $this->authorize('addCategory',$project);
         $request->validate([
             'name' => 'required|string|max:255',
         ]);
@@ -36,6 +37,7 @@ class CategoryController extends Controller
 
     public function destroy(Category $category,Project $project)
     {
+        $this->authorize('addCategory',$project);
         $project->categories()->delete();
         return response()->json(null, 204);
     }
