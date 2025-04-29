@@ -4,6 +4,7 @@ use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ContributionController;
+use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TaskController;
@@ -36,6 +37,16 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::apiResource('projects.roles',RoleController::class);
     Route::post('projects/{project}/tasks/{task}/assign', [TaskController::class,'assign']);
     Route::delete('projects/{project}/tasks/{task}/unassign', [TaskController::class,'unassign']);
+    Route::post('/projects/{project}/invite', [ProjectController::class, 'invite']);
+    Route::get('/notifications', function (Request $request) {
+        return response()->json(request()->user()->notifications);
+    });
+    Route::post('/notifications/markAsRead', [ProjectController::class, 'markAsRead']);
+    Route::post('/notifications/{notification}/accept', [ProjectController::class, 'acceptInvite']);
+    Route::post('/notifications/{notification}/reject', [ProjectController::class, 'rejectInvite']);
+
+    Route::get('/projects/{project}/permissions', [PermissionController::class, 'index']);
+
 });
 
 Route::get('auth/google/redirect', [AuthController::class, 'redirectToGoogle']);
