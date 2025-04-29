@@ -19,13 +19,7 @@ return new class extends Migration
             $table->timestamps();
             $table->unique(['name', 'project_id']);
         });
-        if (!DB::table('categories')->where('name', 'basic')->exists()) {
-            DB::table('categories')->insert([
-                ['name' => 'basic'],
-                ['name' => 'feature'],
-                ['name' => 'bug'],
-            ]);
-        }
+
     }
 
     /**
