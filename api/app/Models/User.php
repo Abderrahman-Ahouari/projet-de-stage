@@ -55,24 +55,47 @@ class User extends Authenticatable
     public function ownProjects()
     {
         return $this->belongsToMany(Project::class, 'contributions')
-            ->wherePivot('role_id', 1);
+            ->withPivot('role_id')
+            ->wherePivotIn('role_id', function ($query) {
+                $query->select('id')
+                    ->from('roles')
+                    ->where('name', 'admin');
+            });
     }
     public function sharedProjects()
     {
         return $this->belongsToMany(Project::class, 'contributions')
             ->withPivot('role_id')
-            ->wherePivot('role_id','!=', 1);
+            ->wherePivotNotIn('role_id', function ($query) {
+                $query->select('id')
+                    ->from('roles')
+                    ->where('name', 'admin');
+            });
     }
 
-    public function tasks($projectId){
-        return $this->belongsToMany(Task::class,'assignments')
-              ->withPivot('project_id')
-              ->wherePivot('project_id',$projectId);
+    public function tasks($projectId)
+    {
+        return $this->belongsToMany(Task::class, 'assignments')
+            ->withPivot('project_id')
+            ->wherePivot('project_id', $projectId);
     }
-    public function role($projectId){
-        return $this->belongsToMany(Role::class,'contributions')
-              ->withPivot('project_id')
-              ->wherePivot('project_id',$projectId);
+    public function role($projectId)
+    {
+        return $this->belongsToMany(Role::class, 'contributions')
+            ->withPivot('project_id')
+            ->wherePivot('project_id', $projectId);
+    }
+
+    public function hasPermission($permission, $projectId)
+    {
+        $role = $this->role($projectId)->first(); // Get the role for the given projectId
+
+        if ($role) {
+            // Now check if the permission exists for that role
+            return $role->permissions()->where('name', $permission)->exists();
+        }
+
+        return false;
     }
 
 
