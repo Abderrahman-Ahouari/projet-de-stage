@@ -11,7 +11,7 @@ class ContributionController extends Controller
 
     public function index(Project $project)
     {
-        $contributors = $project->contributors()->get();
+        $contributors = $project->contributors()->orderBy('created_at')->get();
 
         $contributors->each(function ($contributor) use ($project) {
             $contributor->status = $contributor->tokens()->exists();
@@ -55,6 +55,7 @@ class ContributionController extends Controller
 
     public function destroy(Project $project,Request $request)
     {
+        $this->authorize('manageContributors', $project);
         $project->contributors()->detach($request->user_id);
         return response()->json("Contribution deleted successfully");
     }
