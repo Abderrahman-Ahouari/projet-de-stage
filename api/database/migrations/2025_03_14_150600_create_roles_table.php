@@ -19,13 +19,7 @@ return new class extends Migration
             $table->timestamps();
             $table->unique(['name', 'project_id']);
         });
-        if (!DB::table('roles')->where('name', 'admin')->exists()) {
-            DB::table('roles')->insert([
-                ['name' => 'admin'],
-                ['name' => 'read'],
-                ['name' => 'write'],
-            ]);
-        }
+       
     }
 
     /**
