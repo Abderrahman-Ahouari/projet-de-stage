@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { addCategory } from "../services/authService";
+
 import { useIsFetching } from "@tanstack/react-query";
 
 export default function CategorizeModal({ onClose, onSelect, categories , onAdd , taskCategory}) {
@@ -9,8 +9,8 @@ export default function CategorizeModal({ onClose, onSelect, categories , onAdd 
   const [error, setError] = useState("");
   const loading = useIsFetching()
   const handleSubmit = () => {
-    if (name.trim().length < 5) {
-      setError("Name must be at least 5 characters.");
+    if (name.trim().length < 3) {
+      setError("Name must be at least 3 characters.");
       return;
     }
     setError("");
