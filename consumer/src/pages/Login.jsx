@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { login as apiLogin } from "../services/authService";
+import { ClipLoader } from "react-spinners";
+
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -15,7 +16,7 @@ export default function Login() {
   useEffect(() => {
     if (isLoggedIn) {
       setTimeout(() => {
-        navigate("/");
+        navigate("/projects");
       }, 1000);
     }
   }, [isLoggedIn, navigate]);
@@ -47,7 +48,10 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#f9fafb] p-4">
+    <div className="flex min-h-screen items-center justify-center bg-[#f9fafb] p-4 relative">
+      <div className={`absolute ${loading ? 'top-full scale-100' : 'top-1/2 scale-50'} mt-2 left-1/2 transition-all ease-out duration-75 -translate-x-1/2 z-10`}>
+          <ClipLoader loading={loading} />
+        </div>
       <div className="relative w-full max-w-md overflow-hidden rounded-lg bg-white p-8 shadow-sm">
         <div className="absolute right-0 top-0 h-32 w-32 rounded-bl-full bg-[#2563eb]/10"></div>
 

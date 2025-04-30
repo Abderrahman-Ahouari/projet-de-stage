@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { register } from "../services/authService"
+import { useEffect, useState } from "react"
+import { register } from "../services/services"
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -30,6 +30,11 @@ export default function Register() {
     }
   }
 
+  useEffect(()=>{
+    console.log(errors);
+    
+    
+  },[errors])
   const validateForm = () => {
     const newErrors = {}
 
