@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { getUser } from "../services/authService";
+import { getUser } from "../services/services";
 
 function OAuthSuccess() {
   const navigate = useNavigate();
