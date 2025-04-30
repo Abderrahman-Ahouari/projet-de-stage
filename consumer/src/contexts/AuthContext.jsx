@@ -1,18 +1,19 @@
 
 
 import { createContext, useCallback, useContext, useEffect, useReducer } from "react";
-import { getUser,login as axiosLogin,logout as axiosLogout } from "../services/authService"; 
+import { getUser,login as axiosLogin,logout as axiosLogout } from "../services/services"; 
 import { useNavigate } from "react-router-dom";
 
 
 const initialState = {
-  isLoggedIn: !!JSON.parse(localStorage.getItem("token")),
-  user: JSON.parse(localStorage.getItem("user")),
+  isLoggedIn: localStorage.getItem("token")!==null,
+  user: JSON.parse(localStorage.getItem("user")) || null,
   token: JSON.parse(localStorage.getItem("token")) || null,
   loading: false,
   success: false,
   error : null
 };
+
 
 function authReducer(state, action) {
   switch (action.type) {
@@ -23,9 +24,11 @@ function authReducer(state, action) {
     case 'LOGIN_FAILURE':
       return { ...state, error: action.payload, loading: false };
     case 'LOGOUT':
-      return { ...initialState };
-    case 'LOADING':
-      return { ...state,loading : !state.loading };
+      return { isLoggedIn : false, user : null,token:null,loading :false,success:false,error:null };
+    case 'START_LOADING':
+      return { ...state,loading : true };
+    case 'END_LOADING':
+      return { ...state,loading : false };
     default:
       return state;
   }
@@ -66,14 +69,14 @@ export default function AuthProvider({ children }) {
   },[])
 
   const logout = useCallback(async () => {
-    dispatch({type : 'LOADING'});
+    dispatch({type : 'START_LOADING'});
     try {
-      const response = await axiosLogout();
+      await axiosLogout();
         localStorage.removeItem("token"); 
-        dispatch({ type: "LOADING" }); 
+        localStorage.removeItem("user"); 
+        dispatch({ type: "END_LOADING" }); 
         dispatch({ type: "LOGOUT" }); 
-        
-        navigate("/login"); // Redirect to login page
+        navigate("/login"); 
     } catch (error) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
