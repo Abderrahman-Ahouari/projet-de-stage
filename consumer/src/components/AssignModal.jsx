@@ -4,7 +4,6 @@ import { ClipLoader } from "react-spinners";
 
 
 export default function AssignModal({ onClose, onSelect, assignees, contributors,isLoading }) {
-  
   const [clicked, setClicked] = useState('');
   const fetching = useIsFetching();
   isLoading = isLoading || fetching > 0;
@@ -13,9 +12,6 @@ export default function AssignModal({ onClose, onSelect, assignees, contributors
     ...c,
     isAssigned: !!assignees.find((a) => a.id === c.id),
   }));
-  useEffect(() => {
-    console.log(contributors);
-  }, [contributors]);
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-20">
       <div className="bg-white rounded-lg w-80 max-h-96 overflow-auto p-4">
@@ -30,6 +26,7 @@ export default function AssignModal({ onClose, onSelect, assignees, contributors
             key={c.id}
             className="flex justify-between items-center px-3 py-2  rounded"
           >
+            <img src={c.avatar} alt="Team member" className="w-6 h-6 rounded-full mr-2" />
             <span>{c.username}</span>
             <button
               className="w-6 h-6 rounded-full border cursor-pointer border-gray-400 flex items-center justify-center text-sm font-bold hover:bg-gray-200"
