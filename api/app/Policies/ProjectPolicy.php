@@ -33,6 +33,9 @@ class ProjectPolicy
     public function addCategory(User $user, $project){
         return $user->hasPermission('add category', $project->id);
     }
+    public function deleteCategory(User $user, $project){
+        return $user->hasPermission('delete category', $project->id);
+    }
     public function deleteProject(User $user, $project){
         return $user->hasPermission('delete project', $project->id);
     }
