@@ -89,7 +89,7 @@ const TaskColumn = ({title, tasks, status, moveTask,column,setColumn,contributor
             <TaskCard key={task.id} task={task} moveTask={moveTask} queryClient={queryClient} contributors={contributors} categories={categories} />
           ))}
   
-          {column === status ? (
+          {permissionsNames.includes('add task') && (column === status ? (
             <form
               onSubmit={handleSubmit}
               className="flex flex-col gap-2 p-3 border border-[#e5e7eb] rounded-md bg-white"
@@ -155,7 +155,7 @@ const TaskColumn = ({title, tasks, status, moveTask,column,setColumn,contributor
               </svg>
               Add Task
             </button>
-          )}
+          ))}
         </div>
       </div>
     );
