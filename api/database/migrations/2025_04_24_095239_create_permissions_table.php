@@ -18,11 +18,12 @@ return new class extends Migration
         });
         $permissions = [
             'consult project',
-            'update task status',
             'add task',
             'delete task',
             'categorize task',
+            'update task status',
             'add category',
+            'delete category',
             'assign task',
             'delete project',
             'consult progress',
