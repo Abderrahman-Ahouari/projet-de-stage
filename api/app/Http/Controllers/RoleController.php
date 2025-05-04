@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Permission;
 use App\Models\Project;
 use App\Models\Role;
 use Illuminate\Http\Request;
@@ -11,10 +12,11 @@ class RoleController extends Controller
 
     public function index(Project $project)
     {
-        $project->load('roles');
-        $roles = $project->roles->filter(function ($role) {
-            return $role->name !== 'admin';
-        })->values();
+        $roles = $project->roles()
+        ->with('permissions')
+        ->where('name', '!=', 'admin')
+        ->get();
+
 
         return response()->json($roles);
     }
@@ -33,17 +35,39 @@ class RoleController extends Controller
 
 
 
-    public function update(Request $request, Role $role,Project $project)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-        ]);
-    }
+
 
     public function destroy(Role $role ,Project $project)
     {
         $this->authorize('manageRoles', $project);
         $project->roles()->delete();
         return response()->json(null, 204);
+    }
+
+    public function grant(Project $project ,Role $role,Request $request){
+
+        $this->authorize('manageRoles', $project);
+        if(in_array($role->name,['read','write','manage'])) return;
+        $data = $request->validate(
+            [
+                'id' => 'required|exists:permissions,id'
+            ]
+            );
+        $role->permissions()->attach($data['id']);
+        return response()->json();
+
+    }
+    public function remove(Project $project ,Role $role,Request $request){
+
+        $this->authorize('manageRoles', $project);
+        if(in_array($role->name,['read','write','manage'])) return;
+        $data = $request->validate(
+            [
+                'id' => 'required|exists:permissions,id'
+            ]
+            );
+        $role->permissions()->detach($data['id']);
+        return response()->json();
+
     }
 }

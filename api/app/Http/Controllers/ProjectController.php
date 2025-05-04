@@ -38,11 +38,6 @@ class ProjectController extends Controller
     {
         $this->authorize('consultProject', $project);
         $project->load(['contributors', 'tasks', 'categories.tasks', 'roles']);
-        if($request->user()->id === $project->admin[0]->id) {
-            $project->isOwn = true;
-        }else{
-            $project->isOwn = false;
-        }
         foreach ($project->contributors as $contributor) {
             $contributor->setRelation('tasks', $contributor->tasks($project->id)->get());
         }
@@ -54,7 +49,6 @@ class ProjectController extends Controller
     public function userProjects(Request $request)
     {
         $projects = $request->user()->ownProjects()->orderBy('created_at', 'desc')->get();
-        // $projects->load('contributors', 'tasks');
         foreach ($projects as $project) {
             $project->contributors = $project->contributors()->get();
             $project->tasks = $project->tasks($project->id)->get();
