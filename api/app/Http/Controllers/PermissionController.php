@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\permission;
+use App\Models\Permission;
 use App\Models\Project;
 use Illuminate\Http\Request;
 
@@ -18,9 +18,10 @@ class PermissionController extends Controller
         return response()->json($permissions);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+
+    public function allPermissions(){
+        return response()->json(Permission::all());
+    }
     public function create()
     {
         //
