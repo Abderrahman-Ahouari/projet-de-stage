@@ -1,7 +1,5 @@
-import { useEffect, useState } from "react";
 import { Navigate, useOutletContext, useParams } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
-import { getPermissions } from "../services/services";
 
 const ProtectedRoute = ({ permission, children }) => {
     const {permissionsNames, loadingPermissions} = useOutletContext();

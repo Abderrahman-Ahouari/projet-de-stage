@@ -26,23 +26,7 @@ function ProjectCard({project}) {
     return (
       <div className="bg-white border border-[#e5e7eb] rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
         <div className="flex justify-between items-start mb-3">
-          <button className="text-[#6b7280] hover:text-[#111827] cursor-pointer ml-auto">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="12" cy="12" r="1"></circle>
-              <circle cx="19" cy="12" r="1"></circle>
-              <circle cx="5" cy="12" r="1"></circle>
-            </svg>
-          </button>
+          
         </div>
   
         <h3 className="font-medium text-lg text-[#111827] mb-2">{project.title}</h3>

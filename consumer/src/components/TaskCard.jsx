@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useDrag } from "react-dnd";
-import { useParams } from "react-router-dom";
+import { useOutletContext, useParams } from "react-router-dom";
 import {
   deleteTask,
   assign,
@@ -8,6 +8,7 @@ import {
   getCategories,
   addCategory,
   categorize,
+  deleteCategory,
 } from "../services/services";
 
 import DeleteModal from "./DeleteModal";
@@ -15,6 +16,7 @@ import AssignModal from "./AssignModal";
 import CategorizeModal from "./CategorizeModal";
 
 const TaskCard = ({ queryClient, task, contributors, categories }) => {
+  const {permissionsNames} = useOutletContext()
   const [isLoading, setIsLoading] = useState(false);
   const { id } = useParams();
   const [{ isDragging }, drag] = useDrag(() => ({
@@ -51,7 +53,6 @@ const TaskCard = ({ queryClient, task, contributors, categories }) => {
       ...old,
       tasks: old.tasks.filter((t) => t.id !== task.id),
     }));
-    queryClient.invalidateQueries(["tasks", id]);
     const res = await deleteTask(id, task.id);
     queryClient.invalidateQueries(["tasks", id]);
   };
@@ -73,7 +74,6 @@ const TaskCard = ({ queryClient, task, contributors, categories }) => {
       }),
     }));
     try {
-      queryClient.invalidateQueries(["tasks", id]);
       if (!contributor.isAssigned) await assign(id, task.id, contributor.id);
       if (contributor.isAssigned) await unassign(id, task.id, contributor.id);
       queryClient.invalidateQueries(["tasks", id]);
@@ -95,10 +95,8 @@ const TaskCard = ({ queryClient, task, contributors, categories }) => {
         };
       }),
     }));
-    queryClient.invalidateQueries(["tasks", id]);
     categorize(id, task.id, cat.id);
     queryClient.invalidateQueries(["tasks", id]);
-    setModal(null);
   };
 
   useEffect(() => {
@@ -112,6 +110,17 @@ const TaskCard = ({ queryClient, task, contributors, categories }) => {
       }
     });
     await addCategory(id, cat);
+    queryClient.invalidateQueries(["categories", id]);
+  }
+  async function handleDeleteCategory(id, catId) {
+    queryClient.setQueryData(["categories", id], (old) => {
+      {
+        return old.filter(c=>c.id !== catId);
+      }
+    });
+    const res = await deleteCategory(id, catId);
+    console.log(res.data);
+    
     queryClient.invalidateQueries(["categories", id]);
   }
   return (
@@ -211,6 +220,7 @@ const TaskCard = ({ queryClient, task, contributors, categories }) => {
           onClose={closeModal}
           onSelect={selectCategory}
           onAdd={handleAddCategory}
+          onDelete={handleDeleteCategory}
           categories={categories}
           taskCategory={task.category?.name}
         />
