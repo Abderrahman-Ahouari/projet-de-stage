@@ -43,7 +43,7 @@ export const deleteCategory = (projectId,categoryId) => api.delete(`/projects/${
 
 
 export const getRoles = (projectId) => api.get(`/projects/${projectId}/roles`);
-export const addRole = (projectId,role) => api.post(`/projects/${projectId}/roles`,{role});
+export const addRole = (projectId,role) => api.post(`/projects/${projectId}/roles`,role);
 export const deleteRole = (projectId,roleId) => api.get(`/projects/${projectId}/roles/${roleId}`);
 
 
@@ -56,3 +56,8 @@ export const invite = (projectId,email,roleId) => api.post(`/projects/${projectI
 
 
 export const getPermissions = (projectId) => api.get(`/projects/${projectId}/permissions`);
+export const getAllPermissions = () => api.get(`/permissions`)
+export const grantPermission = (projectId,roleId,permissionId) => api.post(`/projects/${projectId}/roles/${roleId}/permissions`,{id : permissionId})
+export const removePermission = (projectId,roleId,permissionId) => api.delete(`/projects/${projectId}/roles/${roleId}/permissions`,{data : {id : permissionId}})
+
+
