@@ -1,1 +1,26 @@
 @import "tailwindcss";
+
+@layer base {
+  body {
+    @apply bg-slate-50;
+  }
+}
+
+/* Smooth navigation underline effect */
+.nav-link {
+  @apply relative py-2;
+}
+
+.nav-link::after {
+  @apply content-[''] absolute bottom-0 left-0 w-0 h-0.5 bg-teal-500 transition-all duration-300;
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+  @apply w-full;
+}
+
+/* Active navigation state */
+.nav-active {
+  @apply text-teal-600 font-medium;
+}
