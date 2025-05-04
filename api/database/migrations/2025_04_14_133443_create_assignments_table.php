@@ -16,7 +16,7 @@ return new class extends Migration
             $table->uuid('user_id');
             $table->uuid('task_id');
             $table->uuid('project_id');
-            $table->foreign('task_id')->references('id')->on('tasks')->cascadeOnDelete();
+            $table->foreign( 'task_id')->references('id')->on('tasks')->cascadeOnDelete();
             $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
             $table->foreign('project_id')->references('id')->on('projects')->cascadeOnDelete();
             $table->timestamps();
