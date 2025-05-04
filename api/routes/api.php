@@ -46,6 +46,9 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::post('/notifications/{notification}/reject', [ProjectController::class, 'rejectInvite']);
 
     Route::get('/projects/{project}/permissions', [PermissionController::class, 'index']);
+    Route::get('/permissions', [PermissionController::class, 'allPermissions']);
+    Route::post('/projects/{project}/roles/{role}/permissions', [RoleController::class, 'grant']);
+    Route::delete('/projects/{project}/roles/{role}/permissions', [RoleController::class, 'remove']);
 
 });
 
