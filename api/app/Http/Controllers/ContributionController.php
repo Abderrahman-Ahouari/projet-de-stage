@@ -42,6 +42,7 @@ class ContributionController extends Controller
 
     public function update(Request $request, Project $project)
     {
+        $this->authorize('manageTeam',$project);
         $data = $request->validate([
             'role_id' => 'required|exists:roles,id',
             'user_id' => 'required|exists:users,id',
@@ -55,7 +56,7 @@ class ContributionController extends Controller
 
     public function destroy(Project $project,Request $request)
     {
-        $this->authorize('manageContributors', $project);
+        $this->authorize('manageTeam', $project);
         $project->contributors()->detach($request->user_id);
         return response()->json("Contribution deleted successfully");
     }
