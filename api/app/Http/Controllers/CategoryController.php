@@ -35,10 +35,11 @@ class CategoryController extends Controller
         return response()->json($category);
     }
 
-    public function destroy(Category $category,Project $project)
+    public function destroy(Project $project,Category $category)
     {
-        $this->authorize('addCategory',$project);
-        $project->categories()->delete();
-        return response()->json(null, 204);
+        $this->authorize('deleteCategory',$project);
+
+        $project->categories()->where('id',$category->id)->delete();
+        return response()->json($project, 204);
     }
 }
