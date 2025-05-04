@@ -55,10 +55,30 @@ class Project extends Model
     protected static function booted()
     {
         static::created(function ($project) {
-            $defaultRoles = ['admin', 'read', 'write'];
+            $defaultRoles = ['admin','manage', 'read', 'write'];
 
-            // Fetch all permissions once to avoid multiple queries
+
             $permissions = permission::all()->keyBy('name');
+
+            $readPermissions = [
+                $permissions['consult project']->id,
+                $permissions['consult progress']->id,
+                $permissions['consult team']->id,
+            ];
+            $writePermissions = array_merge($readPermissions,[ $permissions['add task']->id,
+            $permissions['delete task']->id,
+            $permissions['categorize task']->id,
+            $permissions['update task status']->id,
+            $permissions['add category']->id,
+            $permissions['delete category']->id,
+            ]
+        );
+
+            $managePermissions = array_merge($writePermissions,[$permissions['assign task']->id,
+            $permissions['manage team']->id,
+            $permissions['manage roles']->id,
+        ]);
+
 
             foreach ($defaultRoles as $roleName) {
                 $role = $project->roles()->create([
@@ -66,27 +86,19 @@ class Project extends Model
                 ]);
 
                 if ($roleName === 'admin') {
-                    // Assign all permissions to admin
                     $role->permissions()->sync($permissions->pluck('id'));
+                }
+                if ($roleName === 'manage') {
+
+                    $role->permissions()->sync($managePermissions);
                 }
 
                 if ($roleName === 'read') {
-                    // Assign only read permissions
-                    $role->permissions()->sync([
-                        $permissions['consult project']->id,
-                        $permissions['consult progress']->id,
-                        $permissions['consult team']->id,
-                    ]);
+                    $role->permissions()->sync($readPermissions);
                 }
 
                 if ($roleName === 'write') {
-                    // All except: delete project, manage team, manage roles
-                    $writePermissions = $permissions->except([
-                        'delete project',
-                        'manage team',
-                        'manage roles',
-                    ]);
-                    $role->permissions()->sync($writePermissions->pluck('id'));
+                     $role->permissions()->sync($writePermissions);
                 }
             }
         });
