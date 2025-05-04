@@ -52,7 +52,7 @@ export default function KanbanBoard() {
       return { tasks: respone.data,project : res3.data, contributors: res1.data };
     },
     enabled: isLoggedIn,
-    staleTime: 1000 * 60 * 1, // Cache data for 5 minutes
+    staleTime: 1000 * 60 * .5, 
     cacheTime: 1000 * 60 * 60,
   });
   const fetchedTasks = data?.tasks;
@@ -69,13 +69,15 @@ export default function KanbanBoard() {
     if (fetchedTasks) setTasks(structureTasks(fetchedTasks));
   }, [fetchedTasks]);
 
+  
+
   const { data: categories = [] } = useQuery({
     queryKey: ["categories", id],
     queryFn: async () => {
       const res = await getCategories(id);
       return res.data;
     },
-    staleTime: 1000 * 60 * 2, 
+    staleTime: 1000 * 60 * .5, 
     cacheTime: 1000 * 60 * 60,
   });
 
@@ -98,19 +100,19 @@ export default function KanbanBoard() {
         [targetStatus]: [...prevTasks[targetStatus], updatedTask],
       };
     });
-    queryClient.invalidateQueries(["tasks", id]);
     await updateStatus(id, taskId, targetStatus);
     queryClient.invalidateQueries(["tasks", id]);
   };
   async function handleDeleteProject(id) {
-    await deleteProject(id);
     queryClient.setQueryData(["projects"], (old) => {
       return {
         ...old,
         projects: old.projects.filter((project) => project.id !== id),
+        sharedProjects : old.sharedProjects.filter((project) => project.id !== id)
       };
     });
     navigate("/projects");
+    await deleteProject(id);
     return;
   }
 

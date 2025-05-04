@@ -3,15 +3,18 @@
 import { useEffect, useState } from "react"
 import { UserPlus, Edit, Trash2 } from "lucide-react"
 import { changeRole, deleteContributor, getContributors, getRoles, invite } from "../services/services"
-import { Link, useParams } from "react-router-dom"
+import { Link, useOutletContext, useParams } from "react-router-dom"
 import { QueryClient, useQuery, useQueryClient } from "@tanstack/react-query"
 import { ClipLoader } from "react-spinners"
 import DeleteModal from "../components/DeleteModal" // Adjust path if needed
 import RoleModal from "../components/RoleModal"
 import InviteModal from "../components/InviteModal"
 import MembersList from "../components/MembersList"
+import Swal from "sweetalert2";
+
 
 export default function ManageTeam() {
+  const {permissionsNames} = useOutletContext()
   const [errors, setErrors] = useState({});
 
   const queryClient = useQueryClient()
@@ -30,7 +33,7 @@ export default function ManageTeam() {
       const res = await getContributors(id)
       return res.data
     },
-    staleTime: 1000 * 60 * 1,
+    staleTime: 1000 * 60 * .5,
     cacheTime: 1000 * 60 * 60,
   })
 
@@ -117,6 +120,12 @@ export default function ManageTeam() {
       setEmail("");
       setRoleId("");
       refetch();
+      Swal.fire({
+        icon: 'success',
+        title: 'Invitation Sent',
+        text: `${trimmedEmail} has been successfully invited.`,
+        confirmButtonColor: '#2563eb'
+      });
     } catch (error) {
       setErrors({ general: "Something went wrong while sending the invitation." });
     }
@@ -131,13 +140,13 @@ export default function ManageTeam() {
           <h1 className="text-2xl font-bold text-[#111827]">Team Management</h1>
           <p className="text-[#6b7280] mt-1">Manage your team members and their roles</p>
         </div>
-        <button
+       {permissionsNames.includes('manage team') && <button
           onClick={toggleInviteModal}
           className="flex items-center gap-2 bg-[#2563eb] text-white px-4 py-2 rounded-lg hover:bg-[#1e40af] transition-colors cursor-pointer"
         >
           <UserPlus size={20} />
           <span>Invite Member</span>
-        </button>
+        </button>}
       </div>
 
       {/* Team Members Table */}
@@ -147,11 +156,11 @@ export default function ManageTeam() {
         </div>
 
         {/* Table Header */}
-        <div className="grid grid-cols-4 gap-4 px-4 py-3 border-b border-[#e5e7eb] text-[#6b7280]">
+        <div className={`grid ${permissionsNames.includes('manage team')?'grid-cols-4' : 'grid-cols-3'} gap-4 px-4 py-3 border-b border-[#e5e7eb] text-[#6b7280]`}>
           <div className="text-sm font-medium">Member</div>
           <div className="text-sm font-medium">Role</div>
           <div className="text-sm font-medium">Status</div>
-          <div className="text-sm font-medium text-right">Delete</div>
+          {permissionsNames.includes('manage team') && <div className="text-sm font-medium text-right">Delete</div>}
         </div>
 
         {loading && (
