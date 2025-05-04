@@ -1,62 +1,9 @@
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { addRole, getAllPermissions, getRoles, grantPermission, removePermission } from '../services/services';
 
-// Sample data
-const initialRoles = [
-  { id: 'manage', name: 'Manage', icon: '🛡️', isDefault: true },
-  { id: 'write', name: 'Write', icon: '✏️', isDefault: true },
-  { id: 'read', name: 'Read', icon: '👁️', isDefault: true },
-  { id: 'custom', name: 'Support Tier 1', icon: '🎧', isDefault: false }, // Example custom role
-];
-
-// Define all possible permissions structure
-const permissionSchema = [
-  {
-    group: 'Users Management',
-    permissions: [
-      { id: 'createUser', name: 'Create Users', icon: '👤+' },
-      { id: 'editUser', name: 'Edit Users', icon: '👤✏️' },
-      { id: 'deleteUser', name: 'Delete Users', icon: '👤-' },
-    ]
-  },
-  {
-    group: 'Content Management',
-    permissions: [
-      { id: 'createContent', name: 'Create Content', icon: '📄+' },
-      { id: 'editContent', name: 'Edit Content', icon: '📄✏️' },
-      { id: 'deleteContent', name: 'Delete Content', icon: '🗑️' },
-    ]
-  },
-  {
-    group: 'Settings Management',
-    permissions: [
-      { id: 'viewSettings', name: 'View Settings', icon: '⚙️' },
-      { id: 'modifySettings', name: 'Modify Settings', icon: '📊' }, // Using a different icon placeholder
-    ]
-  }
-];
-
-const initialRolePermissions = {
-  manage: {
-    createUser: true, editUser: true, deleteUser: false,
-    createContent: true, editContent: true, deleteContent: true,
-    viewSettings: true, modifySettings: true,
-  },
-  write: {
-    createUser: false, editUser: false, deleteUser: false,
-    createContent: true, editContent: true, deleteContent: false,
-    viewSettings: true, modifySettings: false,
-  },
-  read: {
-    createUser: false, editUser: false, deleteUser: false,
-    createContent: false, editContent: false, deleteContent: false,
-    viewSettings: true, modifySettings: false,
-  },
-  custom: { // Initial state for a new/custom role
-    createUser: false, editUser: false, deleteUser: false,
-    createContent: false, editContent: false, deleteContent: false,
-    viewSettings: false, modifySettings: false,
-  },
-};
+import { ClipLoader } from 'react-spinners';
 
 function RoleListItem({ role, isSelected, onSelect }) {
   const baseClasses = "flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-left rounded-lg cursor-pointer transition-colors duration-150";
@@ -66,177 +13,218 @@ function RoleListItem({ role, isSelected, onSelect }) {
 
   return (
     <button
-      onClick={() => onSelect(role.id)}
+      onClick={() => onSelect(role)}
       className={`${baseClasses} ${isSelected ? selectedClasses : `${normalClasses} ${hoverClasses}`}`}
     >
       <div className="flex items-center space-x-3">
-        <span className={`text-lg ${isSelected ? 'text-blue-600' : 'text-gray-500'}`}>{role.icon}</span>
+        <span className={`text-lg ${isSelected ? 'text-blue-600' : 'text-gray-500'}`}>👤</span>
         <span>{role.name}</span>
       </div>
-      {role.isDefault && (
-        <span className="text-xs font-normal bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
-          Default
-        </span>
-      )}
     </button>
   );
 }
 
-function PermissionItem({ permission, isGranted, onToggle }) {
+function PermissionItem({ permission, isGranted, onToggle,role }) {
   const grantButtonClasses = "bg-gray-500 hover:bg-gray-600 text-white";
   const removeButtonClasses = "bg-blue-600 hover:bg-blue-700 text-white";
   const buttonBaseClasses = "text-xs font-medium px-3 py-1 rounded-full transition-colors duration-150";
-
+  const isStandard = ['read','write','manage'].includes(role?.name)
   return (
     <div className="flex items-center justify-between py-3">
       <div className="flex items-center space-x-3 text-sm text-gray-700">
-        <span className="text-gray-500 w-5 text-center">{permission.icon}</span>
+        <span className="text-gray-500 w-5 text-center">🔒</span>
         <span>{permission.name}</span>
       </div>
-      <button
+      {!isStandard && <button
         onClick={onToggle}
         className={`${buttonBaseClasses} ${isGranted ? removeButtonClasses : grantButtonClasses}`}
       >
         {isGranted ? 'Remove' : 'Grant'}
-      </button>
-    </div>
-  );
-}
-
-function PermissionGroup({ title, permissions, rolePermissions, onTogglePermission }) {
-  return (
-    <div className="mb-8 p-6 bg-white rounded-lg border border-gray-200">
-      <h3 className="text-base font-semibold text-gray-800 mb-4">{title}</h3>
-      <div className="divide-y divide-gray-100">
-        {permissions.map((perm) => (
-          <PermissionItem
-            key={perm.id}
-            permission={perm}
-            isGranted={!!rolePermissions[perm.id]} // Ensure boolean value
-            onToggle={() => onTogglePermission(perm.id)}
-          />
-        ))}
-      </div>
+      </button>}
     </div>
   );
 }
 
 function Settings() {
-  const [roles, setRoles] = useState(initialRoles);
-  const [selectedRoleId, setSelectedRoleId] = useState(initialRoles[0]?.id || null); // Select first role initially
-  const [permissions, setPermissions] = useState(initialRolePermissions);
-  const [currentPermissions, setCurrentPermissions] = useState({});
+  const { id } = useParams();
+  const queryClient = useQueryClient();
+  const [selectedRoleId, setSelectedRoleId] = useState(null);
+  const [selectedRole,setSelectedRole] = useState(null);
+  const [rolePermissions, setRolePermissions] = useState({});
+  const [showAddRoleForm, setShowAddRoleForm] = useState(false);
+  const [newRoleName, setNewRoleName] = useState('');
+  const [isAdding, setIsAdding] = useState(false);
+
+  const { data: roles = [], isLoading: rolesLoading } = useQuery({
+    queryKey: ['roles', id],
+    queryFn: async () => {
+      const res = await getRoles(id);
+      return res.data;
+    },
+  });
+
+  const { data: allPermissions = [], isLoading: permissionsLoading } = useQuery({
+    queryKey: ['permissions'],
+    queryFn: async () => {
+      const res = await getAllPermissions();
+      return res.data;
+    },
+  });
 
   useEffect(() => {
-    if (selectedRoleId && permissions[selectedRoleId]) {
-      setCurrentPermissions(permissions[selectedRoleId]);
-    } else {
-      setCurrentPermissions({}); // Clear if no role selected or no permissions found
+    if (roles.length > 0 && selectedRoleId === null) {
+      setSelectedRoleId(roles[0]?.id);
+      setSelectedRole(roles[0])
     }
-  }, [selectedRoleId, permissions]);
+  }, [roles, selectedRoleId]);
 
-  const handleSelectRole = (roleId) => {
-    setSelectedRoleId(roleId);
-  };
+  useEffect(() => {
+    const selectedRole = roles.find(role => role.id === selectedRoleId);
+    if (selectedRole) {
+      const perms = {};
+      selectedRole.permissions?.forEach(p => {
+        perms[p.name] = true;
+      });
+      setRolePermissions(perms);
+    }
+  }, [selectedRoleId, roles]);
 
-  const handleTogglePermission = (permissionId) => {
+  const handleTogglePermission = async (permName, permId, isGranted) => {
     if (!selectedRoleId) return;
-
-    // Create a *new* permissions object to update state immutably
-    setPermissions(prevPermissions => {
-      const updatedRolePermissions = {
-        ...prevPermissions[selectedRoleId], // Copy permissions for the current role
-        [permissionId]: !prevPermissions[selectedRoleId][permissionId], // Toggle the specific permission
-      };
-      return {
-        ...prevPermissions, // Copy all role permissions
-        [selectedRoleId]: updatedRolePermissions, // Update the specific role's permissions
-      };
-    });
-  };
-
-  const handleSaveChanges = () => {
-    console.log('Saving changes for role:', selectedRoleId, currentPermissions);
-    alert('Changes Saved (check console)!');
-  };
-
-  const handleCancel = () => {
-    if (selectedRoleId) {
-      setCurrentPermissions(initialRolePermissions[selectedRoleId] || {});
+    setRolePermissions(prev => ({
+      ...prev,
+      [permName]: !prev[permName],
+    }));
+  
+    try {
+      if (isGranted) {
+        const res = await removePermission(id, selectedRoleId, permId);
+        
+      } else {
+        const res = await grantPermission(id,selectedRoleId, permId);
+        console.log(res.data);
+        
+      }
+  
+      await queryClient.invalidateQueries(['roles', id]);
+    } catch (error) {
+      console.error(`Failed to ${isGranted ? 'remove' : 'grant'} permission ${permName}:`, error);
     }
-    alert('Changes Canceled!');
+  };
+  
+
+  const groupedPermissions = allPermissions.reduce((acc, perm) => {
+    const group = perm.group || 'General';
+    if (!acc[group]) acc[group] = [];
+    acc[group].push(perm);
+    return acc;
+  }, {});
+
+  const handleAddRoleSubmit = async (e) => {
+    e.preventDefault();
+    if (!newRoleName.trim()) return;
+
+    setIsAdding(true);
+    try {
+      console.log(newRoleName.trim());
+      
+      await addRole(id, { name: newRoleName.trim() });
+      setNewRoleName('');
+      setShowAddRoleForm(false);
+      await queryClient.invalidateQueries(['roles', id]);
+    } catch (error) {
+      console.error("Failed to add role:", error);
+    } finally {
+      setIsAdding(false);
+    }
   };
 
-  const handleCreateNewRole = () => {
-    alert('Create New Role Clicked');
-  };
 
-  const selectedRole = roles.find(role => role.id === selectedRoleId);
-
+  function handleSelectRole(role) {    
+    setSelectedRole(role);
+    setSelectedRoleId(role.id);
+  }
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
-      {/* Header */}
       <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
         <h1 className="text-2xl font-semibold text-gray-900">Role Management</h1>
-        <button
-          onClick={handleCreateNewRole}
-          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          <svg className="w-5 h-5 mr-2 -ml-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-          Create New Role
-        </button>
       </div>
 
-      {/* Main Content */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {/* Left Column: Roles List */}
-        <div className="md:col-span-1 lg:col-span-1 bg-white p-4 rounded-lg border border-gray-200 self-start">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">Roles</h2>
-            <span className="text-sm text-gray-500">{roles.length} roles</span>
+      {rolesLoading || permissionsLoading ? (
+        <div className="flex justify-center items-center h-32">
+          <ClipLoader color="#4f46e5" size={50} />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="md:col-span-1 lg:col-span-1 bg-white p-4 rounded-lg border border-gray-200 self-start">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold text-gray-800">Roles</h2>
+              <span className="text-sm text-gray-500">{roles.length} roles</span>
+            </div>
+            <div className="space-y-2">
+              {roles.map(role => (
+                <RoleListItem
+                  key={role.id}
+                  role={role}
+                  isSelected={selectedRoleId === role.id}
+                  onSelect={handleSelectRole}
+                />
+              ))}
+            </div>
+
+            <div className="mt-6">
+              <button
+                onClick={() => setShowAddRoleForm(prev => !prev)}
+                className="w-full px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm rounded-lg transition cursor-pointer"
+              >
+                {showAddRoleForm ? 'Cancel' : 'Add Role'}
+              </button>
+
+              {showAddRoleForm && (
+                <form onSubmit={handleAddRoleSubmit} className="mt-4 space-y-3">
+                  <input
+                    type="text"
+                    value={newRoleName}
+                    onChange={(e) => setNewRoleName(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    placeholder="Enter role name"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    disabled={isAdding}
+                    className="w-full bg-gray-400 hover:bg-gray-500 text-white py-2 rounded-lg text-sm transition disabled:opacity-50 cursor-pointer"
+                  >
+                    {isAdding ? 'Adding...' : 'Submit'}
+                  </button>
+                </form>
+              )}
+            </div>
           </div>
-          <div className="space-y-2">
-            {roles.map((role) => (
-              <RoleListItem
-                key={role.id}
-                role={role}
-                isSelected={selectedRoleId === role.id}
-                onSelect={handleSelectRole}
-              />
+
+          <div className="md:col-span-2 lg:col-span-3 bg-white p-6 rounded-lg border border-gray-200">
+            {Object.entries(groupedPermissions).map(([groupName, perms]) => (
+              <div key={groupName} className="mb-8">
+                <h3 className="text-base font-semibold text-gray-800 mb-4">{groupName}</h3>
+                <div className="divide-y divide-gray-100">
+                  {perms.map(perm => (
+                   <PermissionItem
+                   role= {selectedRole}
+                   key={perm.id}
+                   permission={perm}
+                   isGranted={!!rolePermissions[perm.name]}
+                   onToggle={() =>
+                     handleTogglePermission(perm.name, perm.id, !!rolePermissions[perm.name])
+                   }
+                 />
+                    
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         </div>
-
-        {/* Right Column: Permissions */}
-        <div className="md:col-span-2 lg:col-span-3 bg-white p-6 rounded-lg border border-gray-200">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4">Permissions for "{selectedRole?.name}"</h3>
-          {selectedRoleId && permissionSchema.map((group) => (
-            <PermissionGroup
-              key={group.group}
-              title={group.group}
-              permissions={group.permissions}
-              rolePermissions={currentPermissions}
-              onTogglePermission={handleTogglePermission}
-            />
-          ))}
-          <div className="flex justify-between mt-8">
-            <button
-              onClick={handleCancel}
-              className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSaveChanges}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md"
-            >
-              Save Changes
-            </button>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

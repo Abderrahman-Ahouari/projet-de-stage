@@ -23,10 +23,9 @@ export default function Project() {
         if (!project || project.status === 404) {
           navigate("/404", { replace: true });
         } else {
-          setLoading(false); // Project found, allow render
+          setLoading(false); 
         }
       } catch (err) {
-        console.error("Failed to fetch project:", err);
         navigate("/404", { replace: true });
       }
     };
@@ -34,11 +33,11 @@ export default function Project() {
     fetchProject();
   }, [id, navigate]);
    const [permissions, setPermissions] = useState([]);
-    const [loadingPermissions, setLoadingPermissions] = useState(true);
+   const [loadingPermissions, setLoadingPermissions] = useState(true);
   
     useEffect(() => {
+      if (id) {
       const fetchPermissions = async () => {
-        if (id) {
           try {
             const res = await getPermissions(id);
             setPermissions(res.data);
@@ -46,10 +45,10 @@ export default function Project() {
             console.error("Failed to fetch permissions:", error);
           } finally {
             setLoadingPermissions(false); 
-          }
+          };
         }
-      };
-      fetchPermissions();
+        fetchPermissions();
+      }
     }, [id]);
     const permissionsNames = permissions.map((permission) => permission.name);
 

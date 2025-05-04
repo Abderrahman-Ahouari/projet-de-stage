@@ -55,7 +55,7 @@ export default function Progress() {
       const res = await getProject(id);
       return res.data;
     },
-    staleTime: 1000 * 60 * 1, // Cache data for 5 minutes
+    staleTime: 1000 * 60 * .5, // Cache data for 5 minutes
   cacheTime: 1000 * 60 * 60,
   });
 

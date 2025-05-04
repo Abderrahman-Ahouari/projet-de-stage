@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ProjectsList from "../components/ProjectsList";
 import { ClipLoader } from "react-spinners";
 import { useAuth } from "../contexts/AuthContext";
@@ -6,7 +6,7 @@ import { createProject, getProjects } from "../services/services";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 
 function Projects() {
-  const { isLoggedIn } = useAuth();
+  const {isLoggedIn} = useAuth();
   const [tab, setTab] = useState(()=>+localStorage.getItem("activeProjectsTab") || 0);
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState("");
@@ -18,9 +18,6 @@ function Projects() {
   const handleTabChange = (index) => {
     setTab(index);
     localStorage.setItem("activeProjectsTab", index);
-  
-    
-    
   };
 
   const openForm = () => {
@@ -62,7 +59,9 @@ function Projects() {
   
     try {
       closeForm();
-      await createProject({ title: title.trim(), description, deadline });
+      const res = await createProject({ title: title.trim(), description, deadline });
+      console.log(res);
+      
       queryClient.invalidateQueries(["projects"]);
       setTab(0);
     } catch (err) {
@@ -81,7 +80,7 @@ function Projects() {
       return { projects: res1.data, sharedProjects: res2.data };
     },
     enabled: isLoggedIn,
-    staleTime: 1000 * 60 * 1, 
+    staleTime: 1000 * 60 * .5, 
     cacheTime: 1000 * 60 * 60,
   });
   const projects = data?.projects || [];
