@@ -69,7 +69,7 @@ class TaskController extends Controller
 
         if (isset($validated['category_id'])) {
             $task->fill($validated);
-            $task->timestamps = false; // this prevents `updated_at` from being touched
+            $task->timestamps = false; 
             $task->save();
         } else {
             $task->update($validated);

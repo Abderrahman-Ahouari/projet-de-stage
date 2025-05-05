@@ -12,7 +12,6 @@ return new class extends Migration {
     {
         Schema::create('notifications', function (Blueprint $table) {
             $table->uuid('id')->primary()->default(DB::raw('uuid_generate_v4()'));
-            ;
             $table->string('type');
             $table->uuid('notifiable_id');
             $table->string('notifiable_type');

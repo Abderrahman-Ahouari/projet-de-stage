@@ -35,12 +35,13 @@ function PermissionItem({ permission, isGranted, onToggle,role }) {
         <span className="text-gray-500 w-5 text-center">🔒</span>
         <span>{permission.name}</span>
       </div>
-      {!isStandard && <button
+      <button
         onClick={onToggle}
         className={`${buttonBaseClasses} ${isGranted ? removeButtonClasses : grantButtonClasses}`}
+        disabled={isStandard}
       >
         {isGranted ? 'Remove' : 'Grant'}
-      </button>}
+      </button>
     </div>
   );
 }
